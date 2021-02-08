@@ -1,0 +1,271 @@
+%!TEX root = ../main.tex
+
+\section{Introduction}\label{sec:intro}
+
+\begin{comment}
+\subsection{Contribution.}
+The salient contributions of this work are as follows:
+\begin{itemize}
+\item We propose a joint model for entity disambiguation and quantity fact extraction in quantitative relational web tables.
+\item We introduce TabQs, a system for answering quantity queries from web tables.
+\item  We present extensive experiments on real-world data, showing the high quality of our approach.
+\item A demo of our search system can be found at: \\ \textcolor{blue}{\url{http://tabqs-demo.webredirect.org/table/index.html}}
+\end{itemize}
+\end{comment}
+
+
+%together with title, header, abstract should ideally end at end of first page 
+%(with some leeway for spill-over)
+
+\noindent{\bf Motivation.}
+%
+%
+%quantity-centric queries, beyond lookups
+%filters, comparisons, aggregates/rankings
+%here: focus on quantity filters, as a building block
+%give three examples
+%simple
+%- asian buildings/towers above/taller than 400 meters
+%finance
+%- football clubs worth more than 2 billion
+%technology
+%- mobile phones with battery capacity above 5000 mAh
+%or tablets with ...
+%- electric cars with energy consumption above 80 MPGe
+%sports
+%- sprinters who ran 100 meters under 9.9 seconds
+%
+%
+A good fraction of web queries revolve around quantities of
+entities: looking up, filtering, comparing and aggregating
+quantitative properties such as heights of buildings, 
+running times of athletes, goals or scoring rates of footballers,
+energy consumption of electric cars, etc. 
+\cite{DBLP:conf/semweb/HoIPBW19,DBLP:conf/wsdm/BondarenkoBVAFP20,DBLP:journals/corr/abs-2001-03272}.
+In this paper we focus on {\em quantity filters}
+\cite{DBLP:conf/semweb/HoIPBW19,DBLP:conf/wsdm/HoPKBW20}, 
+%which are 
+an important class
+of queries and also a building block for comparative search.
+Examples are:
+\squishlist
+%\item skyscrapers in Asia taller than 400 meters,
+\item British football teams worth more than 1.5 billion pounds
+\item sprinters who ran 100 m under 9.9 seconds
+\item electric cars with energy efficiency above 80 MPG-e
+\squishend
+
+
+%point out that these are very different from lookups
+%and that search engines and QA assistants don't handle them
+Note that these are more difficult than quantity lookups,
+such as 
+%``the height of the Shanghai tower'' 
+``the value of Manchester City''
+or ``the 
+personal 100 m record of Usain Bolt''.
+Lookups are well supported by search engines and QA assistants.
+Quantity filters, on the other hand, lack this support 
+as conditions like ``more than 1.5 billion pounds'' or
+``under 9.9 seconds'' are mostly interpreted in
+string-matching mode. 
+For some examples, search engines return good
+web pages, such as Wikipedia articles on ``10-second barrier''
+or ``100 metres'', but this is not the user's query intent
+and she has to tediously sift through these pages rather
+than receiving a crisp entity-list answer. 
+Moreover, the result quality depends on the value in the query,
+as some (string-interpreted) values match good list pages. For example, there is a list
+of 100m races under 10 seconds, but none ready for 9.9, 9.8, etc.
+
+
+%would be easy if KGs would have this data,
+%or if one would know a specific high-quality DB (or web list/table) with the data
+%alternatively, extract from a variety of highly heterogeneous sources
+Instead of tapping the web, we could turn to knowledge bases (KBs)
+and structured sources in the Open Data ecosystem. However, KBs
+hardly cover quantities; for example, Wikidata contains thousands of
+sprinters but knows their personal records only for a few instances.
+To tap Open Data sources, one would still have to find the relevant datasets
+in a sea of data sources, and assess their freshness and completeness.
+
+\input{tables/example_table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{0.1cm}
+\noindent{\bf Problem.}
+%
+%quantity fact (fact, for short) extraction
+%focus on web tables as input (as text was addressed in prior works)
+%
+At the core of answering quantity-filter queries is the problem of
+extracting entity-quantity facts from web sources.
+This has been successfully addressed in \cite{DBLP:conf/semweb/HoIPBW19} for
+the case of single sentences from text sources, by recognizing entity-quantity pairs along with relevant context words and
+ building on prior work for spotting quantities with numeric values
+ and units \cite{DBLP:conf/kdd/SarawagiC14,DBLP:journals/tacl/RoyVR15,DBLP:conf/acl/SahaPM17}.
+In this paper, we aim to tap into a different kind of data sources,
+namely, ad-hoc {\em web tables} embedded in HTML pages, and address
+the problem of accurately extracting entity-quantity facts with
+relevant context. 
+An {illustrative} example, 
+%%%GW: good
+which could serve to answer
+the  query about British football teams, is shown in
+Table \ref{table:ExampleTable}.
+
+
+%involves the following steps, illustrated by example
+%on first glance, prior works on web table extraction seems promising
+%but ...
+%point out the diffficulties
+%
+There are good prior works on extracting entity-centric facts from
+web tables, including %\cite{DBLP:journals/pvldb/LimayeSC10,DBLP:conf/kdd/SarawagiC14,DBLP:journals/pvldb/VenetisHMPSWMW11,DBLP:journals/pvldb/CafarellaHLMYWW18,DBLP:journals/pvldb/LehmbergB17,DBLP:conf/edbt/OulabiB19,DBLP:conf/wims/LehmbergB19} and a recent survey \cite{DBLP:journals/tist/ZhangB20}. 
+surveys 
+\cite{DBLP:journals/pvldb/CafarellaHLMYWW18,DBLP:conf/acl/DongHLS20,DBLP:journals/tist/ZhangB20}.
+The output is typically a set of
+subject-predicate-object (SPO) triples, obtained by 
+judiciously
+picking two cells 
+in the same row as S and O 
+and deriving P from the column header of O. 
+In conjunction with entity linking to a KG 
+%\cite{DBLP:journals/pvldb/LimayeSC10,DBLP:conf/semweb/BhagavatulaND15,DBLP:conf/wims/RitzeLB15,DBLP:conf/cikm/IbrahimRW16,DBLP:conf/edbt/RitzeB17},
+\cite{DBLP:journals/tkde/ShenWH15},
+an extractor could yield, for instance, 
+(\textit{Real Madrid, hasCoach, Zinedine Zidane}).
+
+However, state-of-the-art methods do not work well for quantity facts
+for several reasons:
+\squishlist
+\item First, quantities appear in very diverse and potentially noisy forms.
+For example, the team values in Table \ref{table:ExampleTable} 
+ are just strings,
+varying in units and scale and missing values
+(``unknown'', ``n/a'').
+%in their units, and scale (billions) in the column header. Also values may be missing
+%(unknown or n/a).
+%Tables from web sites often pose even more difficult inputs.
+Proper interpretation of table cells 
+may require understanding the surrounding text.
+
+%
+\item Second, it can be hard to infer which column pair denotes a quantity fact,
+that is, to which entity column a quantity column refers.
+In the example Table \ref{table:ExampleTable}, we need to determine that Capacity refers to
+Stadium and Value to Team, but this is not obvious for a machine.
+This is further aggravated by the common situation that
+column headers are more generic and less informative.
+For example, instead of headers like Team, Stadium, Capacity, etc.
+we could have Name, Site, Size, etc., which are hard
+to interpret.
+Prior works on web tables seemed to assume that all columns (for possible choices of O) refer
+to the same column (for S), and that this per-row-entity column is usually
+the leftmost one \cite{DBLP:journals/pvldb/CafarellaHLMYWW18, DBLP:journals/tist/ZhangB20}. However, these assumptions are not always true.
+%
+\item Third, extracting entity-quantity pairs alone is not sufficient
+for query answering, as many queries include additional modifiers
+such as ``British'' or cues for the measure of interest such as
+``energy efficiency''. 
+To be able to match these against a repository of quantity facts,
+the fact extraction needs to capture also relevant context.
+Prior works on triples from web tables ignored this important issue; they viewed the extraction as uncoupled from downstream use cases like user queries and questions. 
+\squishend
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{0.1cm}
+\noindent{\bf Approach.}
+%
+%one short par, sketching the approach
+%
+This paper addresses the outlined problems and presents
+a full-fledged solution, called {\bf QuTE} (\textbf{Qu}antity \textbf{T}able \textbf{E}xtraction), for extracting contextualized quantity facts
+from web tables, to support quantity-filter queries. 
+%%% now explain, in a nutshell, how we overcome each of the above three problems
+%issue 1
+First, to cope with noisy quantities and diverse units and scales in tables, we employ pattern-based extractors and 
+rule-based normalization.
+%issue 2
+Second, for the problem of aligning the right pair
+of entity and quantity columns, one of the key tasks, 
+we devise a statistical inference method
+that leverages external text corpora.
+%We also revisit the entity linking, and 
+%integrate it with the column alignment for
+%joint inference.
+%%issue 3
+Third, to contextualize the extracted quantity facts,
+we exploit text and DOM-tree markup that surround a table, and we introduce a novel way of computing confidence scores for quantity facts, based on evidence in text collections.
+%
+Finally, as the resulting facts may still yield
+many 
+false positives in query results,
+we have developed additional methods for
+enhanced scoring at query time
+% , with external evidence from text and corroboration
+based on consistency learning
+\cite{DBLP:conf/mir/YagnikI07}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{0.1cm}
+\noindent{\bf Contribution.}
+%
+%one short par on contributions
+%
+%Our methodology includes the following novel contributions:
+The following are novel contributions:
+\squishlist
+\item We present 
+a robust solution for the 
+column alignment problem posed by complex tables,
+by harnessing external text corpora
+and joint inference with entity linking.
+This is the first method specifically geared for
+extracting quantity facts, with the novel technique of
+leveraging cues from a large text corpus (Sections \ref{sec:columnalignment}
+and \ref{sec:qfact_scoring_model}).
+%\kp{should we remove the word First here? making it slightly soft}
+%\todo{not the first, but the first for quantity??}
+%\GW{rephrased this}
+\item We introduce a new way of computing quantity fact confidence scores, by incorporating evidence from text collection, with type-based inference to overcome sparseness problems (Section \ref{sec:qfact_scoring_model}).
+\item We present a new method for corroborating
+extracted facts at query time, re-ranking them and pruning false positives
+based on a technique for consistency learning (Section \ref{sec:querying}).
+%(originally devised for a different problem \cite{DBLP:conf/mir/YagnikI07}). 
+%\cite{DBLP:conf/mir/YagnikI07}.
+\item Experiments include comparative evaluations of
+our major building blocks against 
+%state-the-art 
+various
+baselines, and an extrinsic study of how well
+the extracted facts support quantity queries.
+The latter is based on a benchmark of 100 queries
+from \cite{DBLP:conf/semweb/HoIPBW19} and a new
+collection of 150 queries with list-based ground-truth.
+\squishend
+%\GW{we need to add the Qfact confidence scoring as a novel contribution, and clearly refer to Sections 4, 4 and 5.2 as our contributions -- this needs some further changes in the intro, will do later or tomorrow!}\\
+%\GW{done}
+% Experimental data and code are accessible at:\\
+% URL
+% \footnote{\textcolor{blue}{\url{URL}}}.
+% \footnote{\url{URL}}.
+% Experimental data, code and 
+% a QuTE-based search demonstrator is available at \textcolor{blue}{\url{https://www.mpi-inf.mpg.de/research/quantity-search/quantity-table-extraction/}}
+We make the experimental data and code available at 
+\footnote{
+% \textcolor{blue}{
+~\url{https://www.mpi-inf.mpg.de/research/quantity-search/quantity-table-extraction}
+% }
+}.
+A QuTE-based search demonstrator is accessible at
+\footnote{
+% \textcolor{blue}{
+~\url{https://qsearch.mpi-inf.mpg.de/table/}
+% }
+}.
+
+

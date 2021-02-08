@@ -1,0 +1,69 @@
+% \begin{table}[t]
+%   \small
+%   \caption{Performance study of QuTE vs. QuTE-rs.}
+%   \vspace{-1em}
+%   \setlength{\tabcolsep}{0.25em}
+%   \centering
+%   \begin{tabular}{c|c|cccc|c|c}
+%     \hline
+%     \multirow{2}{*}{\textbf{Benchmarks}} & \multirow{2}{*}{\textbf{Methods}} & \multicolumn{4}{c}{\textit{\textbf{Metric}}} \\ 
+%     \cline{3-8}
+%     & & \textit{Pr.@1} & \textit{Pr.@3} &  \textit{Pr.@5} &  \textit{Pr.@10} & \textit{Recall} & \textit{mAP} \\ \hline
+%   \multirow{2}{*}{\textbf{\textit{Q100}}} & \textbf{QuTE}    &  0.510 & 0.528 & 0.519 & 0.486 & -- & -- \\
+%     &\textbf{QuTE-rs} & 0.490 & 0.493 &  0.484 & 0.453 & -- & -- \\ \hline
+%     \multirow{2}{*}{\textbf{\textit{NewQ150}}} & \textbf{QuTE}    &  0.533 & 0.509 & 0.482 & 0.446  & 0.380 & 0.356 \\
+%     &\textbf{QuTE-rs} & 0.540 & 0.504 &  0.473 & 0.432 & 0.380 & 0.352 \\
+%     \hline
+%   \end{tabular}
+%   \label{table:ablation_study}
+% \end{table}
+
+\begin{table}[t]
+%{\color{blue}
+
+%   \small
+  \caption{Ablation study results on \textit{Q100}.}
+	\vspace{\tsq}
+%   \setlength{\tabcolsep}{0.25em}
+  \centering
+  \begin{tabular}{l|ccc} \hline
+Method & \textit{Prec.@1} & \textit{Prec.@5} & \textit{Prec.@10} \\  \hline
+    {QuTE} & 0.540 & 0.512 & 0.491  \\ 
+    \hline
+    {\hspace{0.25em}$-$ page title} &  0.450 & 0.438 & 0.421   \\  
+    {\hspace{0.25em}$-$ table caption} &  0.550 & 0.522 & 0.477  \\  
+    {\hspace{0.25em}$-$ same-row cells} &  0.520 & 0.502 & 0.485  \\  
+    {\hspace{0.25em}$-$ dom-tree headings} &  0.540 & 0.504 & 0.486   \\ 
+    {\hspace{0.25em}$-$ surrounding text} &  0.560 & 0.504 & 0.481 \\ 
+    \hline
+    {\hspace{0.25em}$-$ corroboration} & 0.530 & 0.494 & 0.475 \\ 
+    \hline
+  \end{tabular}
+    \label{table:ablation_study_q100}
+
+    % \vspace{1.5em}
+
+\end{table}
+\begin{table}[t]
+  
+%   \small
+  \caption{Ablation study results on \textit{NewQ150}.}
+	\vspace{\tsq}
+%   \setlength{\tabcolsep}{0.25em}
+  \centering
+  \begin{tabular}{l|ccc} \hline
+Method & \textit{Prec.@10} & \textit{Recall@10} & \textit{mAP@10} \\  \hline
+    {QuTE} & 0.519 & 0.341 & 0.294  \\  
+    \hline
+    {\hspace{0.25em}$-$ page title} & 0.434 & 0.286 & 0.233  \\
+    {\hspace{0.25em}$-$ table caption} & 0.495 & 0.327 & 0.277  \\  
+    {\hspace{0.25em}$-$ same-row cells} & 0.513 & 0.338 & 0.295 \\  
+    {\hspace{0.25em}$-$ dom-tree headings} &  0.521 & 0.341 & 0.293   \\  
+    {\hspace{0.25em}$-$ surrounding text} & 0.513 & 0.336 & 0.289  \\ 
+    \hline
+    {\hspace{0.25em}$-$ corroboration} & 0.497 & 0.327 & 0.279 \\ 
+    \hline
+  \end{tabular}
+  \label{table:ablation_study_q150}
+ %}
+\end{table}

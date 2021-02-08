@@ -1,0 +1,274 @@
+%!TEX root = ../main.tex
+
+\section{Related Work}
+\label{sec:related-work}
+
+\noindent{\bf Quantity Recognition.}
+Detecting quantities in text and tables has been well researched,
+with prevalent methods based on rules, CRFs or neural learning
+%such as LSTMs
+\cite{DBLP:conf/kdd/SarawagiC14, DBLP:journals/tacl/RoyVR15,DBLP:conf/aaai/MadaanMMRS16, DBLP:conf/sigir/AlonsoS18,DBLP:conf/acl/SahaPM17,DBLP:conf/cikm/IbrahimRW16}. 
+This involves recognizing numeric expressions in combination with
+units, and ideally includes also normalization of values
+(considering scale indicators as in ``10 mio'' or ``10K'')
+and conversions of units (e.g., from US dollars into GBP
+or MPG-e into kWh/100km).
+Normalization and conversions are handled via rules.
+%
+This prior work solely focuses on the numeric quantity alone,
+and does not include inferring to which entity the quantity
+refers.
+Moreover, it does not identify contextual cues that
+are necessary for querying. 
+Our paper starts with state-of-the-art quantity recognition,
+and makes novel contributions on inferring 
+respective entities and relevant contexts.
+
+% KB: Last sentence "This paper..." could be dropped if we need space, given that RW is placed at the end.
+
+\vspace{0.1cm}
+
+
+\noindent{\bf Fact Extraction from Web Tables.}
+Ad-hoc tables in HTML pages and spreadsheet contents
+have been studied as a target for entity and concept linking,
+fact extraction, search and question answering.
+The surveys by \cite{DBLP:journals/pvldb/CafarellaHLMYWW18} and \cite{DBLP:journals/tist/ZhangB20} discuss the relevant literature.
+
+%
+Our work builds on state-of-the-art entity linking
+for web tables
+\cite{
+DBLP:journals/pvldb/LimayeSC10, 
+DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16, DBLP:conf/semweb/EfthymiouHRC17, DBLP:conf/edbt/RitzeB17}
+% , DBLP:journals/pvldb/LehmbergB17
+sharing the general approach of combining per-row contexts
+with per-column coherence based on probabilistic graphical models
+or random walks.
+% We extend prior methods by incorporating type homogeneity.
+% {\color{blue}
+%We extend prior methods by computing jointly with column alignment.
+% }
+
+%
+%KB augmentation
+Prior methods for fact extraction from tables, for the
+task of KB augmentation, have followed
+the standard model of SPO triples, with focus on entity linking
+for the S and O arguments from the same row \cite{DBLP:conf/kdd/0001GHHLMSSZ14, DBLP:conf/wims/RitzeLB15, DBLP:conf/edbt/RitzeB17, 
+DBLP:conf/edbt/OulabiB19, DBLP:conf/www/FetahuAK19,DBLP:conf/semweb/KruitBU19}.
+% DBLP:journals/pvldb/LehmbergB17,
+Target predicates P are 
+%often
+%mostly
+assumed to come from a pre-existing
+knowledge base
+%or are pre-specified in some way 
+(as opposed to OpenIE).
+None of the prior works distinguish whether the O column contains
+entities or numeric quantities.
+In contrast, our method includes specific techniques to handle 
+quantity columns.
+%except Chakrabarti/Sarawagi: KDD 2014 ??? also VLDB 2011 ? Girija et al.
+%
+%also mention out-of-KB entities ? e.g. Oulabi/Bizer ?
+
+A prevalent assumption is that there is a single subject column
+where all S arguments come from, regardless of the choice of O column.
+Some works use the heuristics that S is the leftmost
+non-numeric column of a table;
+%and that all O candidates from
+%other columns refer to this S column of key entities.
+other works employ a supervised classifier based on simple features of
+candidate columns \cite{DBLP:journals/pvldb/VenetisHMPSWMW11,DBLP:journals/pvldb/DengJLLY13}.
+%Venetis et al. plus Deng et al. VLDB 2013
+Our approach does not make this assumption of a single subject column,
+thus being able to tap into more complex 
+content-rich tables.
+The only prior work that considered multiple S-columns is \cite{DBLP:conf/er/BraunschweigTL15}.
+%Katrin Braunschweig et al.
+This method critically relies on the detection of
+approximate functional dependencies and value correlations between column pairs.
+This does not work for quantity columns, though,
+as their values can be anywhere between all-distinct
+and many-duplicates (e.g., if stadium capacities in Table \ref{table:ExampleTable} were crudely rounded to 50K, 60K, etc.).
+%None of the prior works gives specific treatment to quantity columns.
+%In contrast, we have devised customized techniques to handle the case of quantities.
+%
+
+
+
+
+
+
+\vspace{0.1cm}
+
+\noindent{\bf Entity Search and Question Answering.}
+%cite QALD, surveys QA-KG, QA-text
+Entity-centric search and question answering are broad areas
+that cover a variety of information-seeking needs, see surveys
+like \cite{DBLP:series/irs/Balog18,DBLP:journals/kais/DiefenbachLSM18,DBLP:journals/access/HuangXHWQFZPW20,reinanda2020knowledge}.
+%Balog, deRijke:KG-IR, text-QA, ...
+As far as quantities are concerned, lookups are supported
+by many methods, over both knowledge graphs and text documents,
+and are part of major benchmarks,
+such as QALD \cite{DBLP:conf/clef/UngerFLNCCW15}, NaturalQuestions \cite{DBLP:journals/tacl/KwiatkowskiPRCP19},
+%SQuAD \cite{DBLP:conf/emnlp/RajpurkarZLL16}, 
+%TREC CAR \cite{DBLP:conf/trec/DietzG0C18},
+ComplexWebQuestions \cite{DBLP:conf/naacl/TalmorB18},
+LC-QuAD \cite{DBLP:conf/semweb/DubeyBA019} and others.
+%check out 3 or 4 most important benchmarks, incl. TREC entity search ?
+However, lookups such as ``What is the value of Real Madrid?''
+or ``energy consumption of Toyota Prius Prime'' are much
+easier to process than queries with quantity filters.
+The former do not need to interpret quantities in terms
+of measure, value and unit, whereas this is crucial for
+evaluating filter conditions.
+%To the best of our knowledge, 
+The only prior work that specifically
+addressed quantity filters is \cite{DBLP:conf/semweb/HoIPBW19,DBLP:conf/wsdm/HoPKBW20}, which was solely based on
+textual contents, though.
+%
+%Evaluating filters would be straightforward over a high-quality
+%knowledge graph with a relational representation,
+%but (publicly available) KGs hardly cover quantity properties.
+%For example, Wikidata ({\small\url{http://wikidata.org}}) contains thousands of runners,
+%but knows the times of their races only in a few cases.
+%Regarding technical properties of cars, such as range, power, energy efficiency etc.,
+%there is virtually no data at all.
+
+Search and QA over web tables have been addressed in various settings.
+%The seminal work of \cite{} and recent works by \cite{}
+Methods in \cite{DBLP:journals/pvldb/PimplikarS12,DBLP:conf/kdd/SarawagiC14,DBLP:conf/sigmod/YakoutGCC12,DBLP:journals/corr/abs-2001-03272} support
+%Sarawagi, 
+querying heterogeneous collections of tables, but 
+%mostly focus
+focus
+on the joint mapping of keywords onto entities and column headers in the underlying data.
+Quantity-filter queries are not addressed.
+%except Sarawagi/Chakrabarti KDD 2014 ??? also VLDB 2011 ? Girija et al.
+%Other methods \cite{DBLP:conf/acl/PasupatL15} focus on QA %over a single input table.
+%%Pasupat/Liang WebTableQuestions
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%% old material %%%%%%%%%%%%%%%%%%%%%%%
+
+%%%GW: I rewrote this from scratch, as we should not re-use any literal text from our prior papers
+\begin{comment}
+\noindent \textbf{Entity Linking in Web Tables.}
+Considering web tables as a valuable source of semi-structured information, many literature have been addressed the problem of extracting semantics of web tables, where one of the key components is entity disambiguation on web tables~\cite{DBLP:journals/pvldb/LimayeSC10, DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16, DBLP:conf/semweb/EfthymiouHRC17, DBLP:conf/edbt/RitzeB17, DBLP:journals/pvldb/LehmbergB17}). Most of these works adopt feature engineering techniques that rely on co-occurrences of text mentions of the table in external data sources (e.g., KB, text corpus). However, such features are not directly applicable for quantities, which becomes the main limitation for the existing approaches as we focus on quantitative tables where entity disambiguation is an integral part of understanding quantities in the table.  
+%, and thus they are slow in performance and limited in scalability. Moreover, 
+%In case of quantitative tables as we are considering now, these feature engineering techniques become limited, as most of the interesting data are nothing more than numbers, and computing required feature values for numbers are more difficult than for text.
+
+Our proposed entity linking method resembles the previous works TabEL~\cite{DBLP:conf/semweb/BhagavatulaND15} and Equity~\cite{DBLP:conf/cikm/IbrahimRW16}. However, we also take into account quantitative features through a joint approach for entity linking and entity-quantity column alignment. Our approach relies on minimal textual cues of the tables, specifically designed for quantitative relational tables with a large number of quantities.
+
+
+\vspace{0.1cm}
+\noindent \textbf{Quantity Recognition.}
+%Recognizing and extracting numeric expressions
+%from text has been addressed using
+%techniques like CRFs and LSTMs 
+%(e.g., \cite{DBLP:conf/aaai/MadaanMMRS16,DBLP:conf/acl/SahaPM17,DBLP:conf/sigir/AlonsoS18}).
+%However, this alone does not turn numbers
+%into interpretable quantities, with units
+%and proper reference to the entity with
+%that quantity. Only few works attempted
+%to canonicalize quantities by mappings
+%to hand-crafted knowledge bases 
+%of measures \cite{DBLP:conf/cikm/IbrahimRW16}, but these efforts are
+%very limited in scope.
+%The special case of temporal expressions
+%has received substantial attention
+%(e.g., \cite{DBLP:series/synthesis/2016Strotgen}), but this solely covers dates
+%as measures.
+%
+%Most related to our approach are the works
+%of \cite{DBLP:conf/kdd/SarawagiC14} and \cite{DBLP:journals/tacl/RoyVR15}.
+%The former used probabilistic context-free grammars
+%to infer units of quantities, but focused specifically
+%on web tables as inputs.
+%The latter extended semantic role labeling (see below)
+%to extract quantities and their units from
+%natural language sentences.
+%Neither of these can be readily applied
+%to extracting quantities and their reference entities
+%from arbitrary textual inputs.
+%
+%\todo{the below is from WSDM}
+Recognizing and extracting
+numeric expressions from textual and tabular data has been addressed by previous works (e.g., \cite{DBLP:conf/sigir/AlonsoS18,DBLP:journals/tacl/RoyVR15,DBLP:conf/acl/SahaPM17, DBLP:conf/cikm/IbrahimRW16}).
+However, this alone does not turn numbers into
+interpretable quantities with a unit, a reference entity and a proper frame of the reference
+(e.g., the timeframe for revenue, dosages, etc.). Addressing this problem,~\cite{DBLP:conf/semweb/HoIPBW19}
+proposes an LSTM-based model that links quantities in a text to their reference entities and recognizes a bag of words as the linking context. However, the model operates on sentence-level and can not be applied to web tables. To improve the coverage of numeric relations in existing KG, a numerical extractor is proposed using a static rule-based method and a probabilistic graphical model in~\cite{DBLP:conf/aaai/MadaanMMRS16}, which also works only on text. 
+%The most promising one is the work of \cite{DBLP:conf/semweb/HoIPBW19}, using a deep LSTMs network to  link quantities in text to proper entities and contexts, however their approach does not work on web tables.
+
+A closely related work
+~\cite{DBLP:conf/kdd/SarawagiC14} proposes a model using probabilistic context-free grammars
+to infer quantity units from table headers. Adopting semantic role labeling to extract quantities and their units from
+natural language sentences, a quantity extractor is proposed in~\cite{DBLP:journals/tacl/RoyVR15}. In this work, we use a combination of methods used in ~\cite{DBLP:conf/kdd/SarawagiC14, DBLP:journals/tacl/RoyVR15}, together with several hand-crafted rules to extract quantities from web tables as a preprocessing step in our proposed framework.
+
+
+\vspace{0.1cm}
+\noindent \textbf{Question Answering.} 
+%below is from WSDM
+%%1 par on search and QA
+%Semantic search (e.g., \cite{DBLP:series/irs/Balog18,DBLP:journals/ftir/BastBH16, DBLP:conf/rweb/BastS18, DBLP:conf/ecir/GarigliottiB18}) has largely focused on entity-seeking queries,
+%where either a type description or an entity name is the starting point.
+%When such requests involve quantities, it is in the form of simple lookups,
+%for example, the net worth of Bezos or the range of the Tesla Model S.
+%These queries do not require any understanding of measures and
+%search conditions over quantities. 
+%The same holds for most of the work on question answering, where
+%natural language questions are mapped into queries over knowledge graphs
+%or text corpora (e.g., \cite{DBLP:conf/acl/GardnerC18,DBLP:journals/kais/DiefenbachLSM18,DBLP:conf/wsdm/HuangZLL19,DBLP:conf/emnlp/RajpurkarZLL16}).
+%Although some benchmarks like QALD and ComplexWebQuestions include a small
+%fraction of questions that mention quantities, this is almost exclusively in the form
+%of lookups (e.g., what is Bezos's net worth) rather than search conditions
+%(e.g., CEOs with net worth above 1B).
+Many advanced factoid-based Question Answering (QA) systems have been developed, covering the both major paradigms in QA, IR-based QA on text corpora \cite{DBLP:conf/acl/WangN15, DBLP:conf/emnlp/YangYM15} and knowledge-graph-based QA~\cite{ DBLP:conf/coling/BaoDYZZ16, DBLP:conf/ecctd/Sanchez-Azqueta17}, or fusing them both \cite{DBLP:conf/acl/DasZRM17,DBLP:conf/emnlp/SunDZMSC18}, in order to handle complex compositional queries in natural language. Diverging from traditional open-domain QA, many recently developed QA systems~\cite{DBLP:journals/corr/WestonBCM15,DBLP:conf/acl/RajpurkarJL18} address the reading comprehension task that requires understanding and reasoning of natural language.  However, none of these QA systems can efficiently handle processing and reasoning of quantitative information, and thus mostly fail to deal with queries with quantity constraints.  
+%A few state-of-the-art works\cite{DBLP:conf/cikm/JiaARSW18} focus explicitly the reasoning of temporal constraints in questions, and most of the previous works can support mainly the counting-based numeric queries. In this work, we aim to generalize the processing of quantitative information over varied numerical constraints exploiting deep semantic role labeling. 
+
+%Limited number of numeric relations in the KG is an important bottle neck for processing quantities, and recently has been addressed in\cite{DBLP:conf/aaai/MadaanMMRS16}. 
+
+%Unlike our quantity-specific context extraction model, the authors presented NumberTron which aims to extract triplets for specific numeric relations from textual corpora. Tapping into semi-structured resources from Web, QEWT\cite{DBLP:conf/kdd/SarawagiC14} harnesses ambiguous and imprecise numbers in web tables and improve the performance of quantity-seeking queries.   
+
+%Below is from ISWC, mention very much about linked data.
+
+%QA over knowledge graphs and other linked data sources has received great attention over the
+%last years; see \cite{DBLP:conf/rweb/UngerFC14,DBLP:journals/kais/DiefenbachLSM18} for surveys.State-of-the-art methods (e.g., \cite{DBLP:conf/acl/YihCHG15,DBLP:conf/cikm/BastH15,DBLP:conf/acl/XuRFHZ16,DBLP:conf/www/AbujabalRYW18,DBLP:journals/pvldbZhengYZC18}) 
+%translate questions into SPARQL queries, bridging the gap between question vocabulary and the terminology of the underlying data by means of templates and/or learning from training collections of question-answer pairs. Benchmarks like the long-standing QALD series and other competitions have shown great advances along these lines \cite{DBLP:journals/semweb/UsbeckRHCHNDU19}. However, these benchmark tasks hardly contain any quantity queries of the kind
+%addressed here (even in QALD-6-task-3, only 6 out of 150 questions are of this kind, others are mostly about quantity lookup). Note that look-ups of  quantity attributes of qualifying entities (e.g., Jeff Bezos's net worth, 10 richest people, or fastest sprinter over 100m) are of a different nature, as they do not contain quantity comparisons between query and data (e.g., worth more than 50 million USD, running faster than 9.9 seconds). Moreover, the scope and diversity of the benchmark queries is necessarily restricted to relatively few numeric properties, as knowledge graphs hardly capture quantities in their full extent (with value and unit properly separated and normalized). This is our motivation to tap into text sources with more extensive coverage.
+%QA over text has considered a wide range of question types (e.g., \cite{DBLP:conf/emnlp/Yang0ZBCSM18,DBLP:conf/acl/GardnerC18,DBLP:conf/acl/ChenFWB17}), but there is again hardly any awareness of quantity queries. Keyword search, including telegraphic queries, with quantity conditions have been considered by  \cite{DBLP:conf/emnlp/JoshiSC14}, and have been applied to web tables \cite{DBLP:journals/pvldb/PimplikarS12,DBLP:conf/kdd/SarawagiC14}. 
+%%The approaches pursued in that context
+%%cannot be carried over to our setting
+%%where the data input is arbitrary natural language text.
+%
+%\cite{DBLP:conf/sigir/BanerjeeCR09} and its follow-up work \cite{DBLP:conf/kdd/SarawagiC14}
+%focused on a specific kind of quantity query, namely, retrieving and aggregating numerical values associated with an attribute of a given entity (e.g., Bezos's net worth or GDP of India). To this end,  learning-to-rank techniques over value distributions were developed to counter the uncertainty in the retrieved values, where web pages often contain crude estimates and lack exact values. In contrast to our setting, that work did not
+%consider quantities in search conditions. 
+%%and did not
+%%require inferring units and entities to which
+%%quantities refer.
+
+To avoid the complex processing of completely unstructured text corpus or the limitation of information in structured KB, many works exploit the rich source of semi-structured web tables for QA~\cite{DBLP:conf/www/SunMHYSY16, DBLP:conf/coling/WangZMSWW18, DBLP:conf/kdd/SarawagiC14, DBLP:conf/acl/PasupatL15}.
+Specifically focusing on numerical attributes in tables, the work~\cite{DBLP:conf/kdd/SarawagiC14} presents an inference framework with a unit extractor to find a rank distribution of numerical values for target quantity type.
+However, this work only tackles the lookup queries for quantitative attributes and also does not consider the textual cues surrounding the tables. 
+
+
+\vspace{0.1cm}
+\noindent \textbf{Web Tables for KG Completion.}
+%\sr{How about calling this paragraph ``fact/statement extraction from web tables?'' not so important whether the facts are used for KG completion afterwards?}
+Considering that current KBs are far from being complete, various works~\cite{DBLP:conf/kdd/0001GHHLMSSZ14, DBLP:conf/wims/RitzeLB15, DBLP:conf/edbt/RitzeB17, DBLP:journals/pvldb/LehmbergB17, DBLP:conf/semweb/KruitBU19} use tables to extract knowledge for KB augmentation. \cite{DBLP:conf/wims/RitzeLB15} matches table entities and relations to DBpedia to extract new facts using large web tables, and \cite{DBLP:journals/pvldb/LehmbergB17}  focuses the problems 
+%in the matching procedure in case of small web tables. \
+on the matching between table contents and KB entities and classes.
+%\todo{we need to emphasize that these works hardly handle quantities.} 
+\todo{cite also ???: \cite{DBLP:conf/www/FetahuAK19, DBLP:conf/semweb/MulwadFJ13}}
+%Limited  is an important bottle neck for processing quantities, and recently has been addressed in \cite{DBLP:conf/aaai/MadaanMMRS16}.
+
+\end{comment}
+
+

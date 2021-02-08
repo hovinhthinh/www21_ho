@@ -1,0 +1,45 @@
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\begin{algorithm}[t]
+\small
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwProg{Fn}{Function}{}{}
+\SetKwRepeat{Do}{do}{while}
+\Input{\ Preprocessed table $\mathcal{T}$}
+\Output{\ Column alignment $\mathcal{L}^*$ and Entity assignment $\theta^*$}
+$\mathcal{L}^* \leftarrow \text{null}$;\ \ \ $\theta^* \leftarrow \text{null}$\\
+\newcommand{\algrule}[1][.2pt]{\par\vskip.25\baselineskip\hrule height #1\par\vskip.25\baselineskip}
+
+\ForEach{column alignment $\mathcal{L}$} {
+	$\theta' \leftarrow \textit{FindBestEntityAssignment}(\mathcal{T}, \mathcal{L})$\\
+	\If{$\textit{plausibility}(\mathcal{L} | \theta') > \textit{plausibility}(\mathcal{L^*} | \theta^*)$} {
+		$\mathcal{L}^* \leftarrow \mathcal{L}$;\ \ \ $\theta^* \leftarrow \theta'$
+	}
+}
+return $(\mathcal{L}^*, \theta^*)$\\
+\algrule
+%    \tcc{Applies refinement operators to explore more new rules.}
+
+\Fn{$\textit{FindBestEntityAssignment}(\mathcal{T}, \mathcal{L}$)}{
+$\theta' \leftarrow \{\forall{m_i \in \mathcal{T}}: m_i \rightarrow C(m_i)[0]\}$\\
+\Do{\text{hasChange}}{
+$\textit{hasChange} \rightarrow \text{False}$\\
+% \tcp{\footnotesize Compute best new candidate for each entity mention}
+\ForEach{$(m_i \rightarrow e_i) \in \theta'$} { 
+	$e_i' \leftarrow \argmax\limits_{e \in C(m_i)} \textit{plausibility}(\mathcal{L} | (\theta' \cup \{m_i \rightarrow e\}))$ 
+}
+% \tcp{\footnotesize Re-assign candidate entities for mentions}
+\ForEach{$(m_i \rightarrow e_i) \in \theta'$} { 
+	\If{$e_i' \ne e_i$}{
+	$\theta' \leftarrow \theta' \cup \{m_i \rightarrow e_i'\}$\\
+		$\textit{hasChange} \leftarrow \text{True}$
+	}	
+}
+
+}
+return $\theta'$
+}
+\caption{Table Plausibility Maximization}
+\label{algor:1}
+\end{algorithm}

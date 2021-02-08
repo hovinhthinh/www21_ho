@@ -1,0 +1,140 @@
+\begin{comment}
+
+%!TEX root = ../main.tex
+\begin{table*}[t]
+\hspace{2.5em}
+\begin{minipage}{.3\textwidth}
+\centering
+\small
+\caption[]{Stadiums with capacity \footnotemark.}
+\vspace{-1em}
+\begin{tabular}{l|l|l} 
+\multicolumn{3}{l}{\textit{(a)\ \ \ Original:}}\\
+\midrule
+Team & Stadium & Capacity \\
+ \midrule
+ Marseille & Stade V\'elodrome & 60,031 \\
+PSG & Parc des Princes & 48,712\\
+Lyon &Stade de Gerland &43,051\\
+Nantes&Stade de la Beaujoire &38,285\\
+ \midrule
+\end{tabular}
+\label{fig:preprocess_sample_1}
+\end{minipage}
+\hspace{6.5em}
+\begin{minipage}{.5\textwidth}
+\centering
+\small
+\caption{Car models and their properties. \todo{use a better table?? / OR REMOVE TO SAVE SPACE}}
+\vspace{-1em}
+\begin{tabular}{l|l|p{7em}|p{3.4em}}
+\multicolumn{3}{l}{\textit{(a)\ \ \ Original:}}\\
+ \midrule
+Vehicle & Manufacture
+ %& GHG emission (per 100 mile) 
+ & Tailpipe emission
+(g/mi of CO2)  & Annual fuel cost \\
+ \midrule
+ Toyota Prius Eco & Toyota 
+ %& 51 lb CO2 
+ & 178 & \$600.00 \\
+Tesla Model S & Tesla 
+%& 54 lb CO2
+& 0& \$700.00\\
+Chevrolet Volt 2011 &GM 
+%&61 lb CO2 
+&81 &\$800.00\\
+BMW i3 &BMW 
+%&54 lb CO2
+ &0 &< 550\$\\
+ \midrule
+\end{tabular}
+\label{fig:preprocess_sample_2}
+\end{minipage}
+\\
+\hspace{-1em}
+\begin{minipage}{.3\textwidth}
+\centering
+\small
+\begin{tabular}{l|l|l} 
+ \multicolumn{3}{l}{\textit{(b)\ \ \ Preprocessed:\ \ \ \ \ Entity columns: (\#); Quantity columns: (*)}}\\
+\midrule
+(\#) Team & (\#) Stadium & (*) Capacity \\
+ \midrule
+``Marseille'' & ``Stade V\'elodrome'' & (60031; ; =) \\
+``PSG'' & ``Parc des Princes'' & (48712; ; =)\\
+``Lyon'' & ``Stade de Gerland'' &(43051; ; =)\\
+``Nantes'' & ``Stade de la Beaujoire'' &(38285; ; =)\\
+ \midrule
+\end{tabular}
+\end{minipage}
+\hspace{9em}
+\begin{minipage}{.5\textwidth}
+\centering
+\small
+\begin{tabular}{l|l
+%|p{5.8em}
+|p{8.1em}|p{4.1em}}
+ \multicolumn{4}{l}{\textit{(b)\ \ \ Preprocessed:\ \ \ \ \ Entity columns: (\#); Quantity columns: (*)}}\\
+ \midrule
+(\#) Vehicle & (\#) Manufacture 
+%& GHG emission (per 100 mile) 
+& (*) Tailpipe emission
+(g/mi of CO2)  & (*) Annual fuel cost \\
+ \midrule
+ ``Toyota Prius Eco'' &  ``Toyota'' 
+ %& (51; lb; =) 
+ & (178; g/mi; =) & (600; \$; =) \\
+ ``Tesla Model S'' &  ``Tesla'' 
+ %& (54; lb; =)
+ & (0; g/mi; =)& (700; \$; =)\\
+ ``Chevrolet Volt 2011'' &  ``GM''
+ %&(61; lb; =) 
+ &(81; g/mi; =) &(800; \$; =)\\
+ ``BMW i3'' &  ``BMW'' 
+ %&(54; lb; =) 
+ &(0; g/mi; =) &(550; \$; <)\\
+ \midrule
+\end{tabular}
+\end{minipage}
+\end{table*}
+\footnotetext{\url{https://en.wikipedia.org/wiki/2008\%E2\%80\%9309\_Ligue\_1}}
+
+\end{comment}
+
+
+
+%!TEX root = ../main.tex
+\begin{table}[t]
+\caption[]{Stadiums with capacity \footnotemark. \todo{use example table 1 instead}}
+
+\centering
+\small
+\vspace{-1em}
+\begin{tabular}{l|l|l} 
+\multicolumn{3}{l}{\textit{(a)\ \ \ Original:}}\\
+\hline
+Team & Stadium & Capacity \\
+\hline
+ Marseille & Stade V\'elodrome & 60,031 \\
+PSG & Parc des Princes & 48,712\\
+Lyon &Stade de Gerland &43,051\\
+Nantes&Stade de la Beaujoire &38,285\\
+\hline
+\end{tabular}
+\label{fig:preprocess_sample_1}
+\\
+\centering
+\small
+\begin{tabular}{l|l|l} 
+ \multicolumn{3}{l}{\textit{(b)\ \ \ Preprocessed:\ \ \ \ \ Entity columns: (\#); Quantity columns: (*)}}\\
+\hline
+(\#) Team & (\#) Stadium & (*) Capacity \\
+\hline
+``Marseille'' & ``Stade V\'elodrome'' & (60031; ; =) \\
+``PSG'' & ``Parc des Princes'' & (48712; ; =)\\
+``Lyon'' & ``Stade de Gerland'' &(43051; ; =)\\
+``Nantes'' & ``Stade de la Beaujoire'' &(38285; ; =)\\
+\hline
+\end{tabular}
+\end{table}

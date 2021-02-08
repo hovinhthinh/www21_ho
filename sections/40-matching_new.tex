@@ -1,0 +1,299 @@
+%!TEX root = ../main.tex
+%\section{Quantity Search on Web Tables}
+\section{Use Case: Quantity Querying}
+\label{sec:querying}
+\subsection{Matching and Ranking}
+
+%%%GW: keep this short, as it is essentially the same as in the ISWC 2019 paper
+
+\begin{comment}
+
+
+In this section, we describe our quantity search system on web tables, built on top of the extraction model described in Sections \ref{sec:extract} and \ref{sec:qfact_scoring_model}. Figure \ref{fig:search_ov} shows the overview of our system, which contains two main phases: \textit{Extraction} and \textit{Search \& Ranking}.
+
+\end{comment}
+
+All Qfacts from web tables are fully contextualized into the form
+$\mathcal{F} = (e,q,X)$, stored and indexed.
+% , along with their
+% combined evidence scores, in ElasticSearch.
+We process a Qquery $\mathcal{Q} = (qt,qq,qX)$
+against this data
+by mostly following the method of \cite{DBLP:conf/semweb/HoIPBW19}:
+Qfact entities are matched against the target type $qt$ using type information from the KB, quantities are compared to query condition $qq$,
+and the context agreement between $X$ and
+$qX$ is quantified by the
+{\em directed embedding distance} of \cite{DBLP:conf/semweb/HoIPBW19}.
+This yields a ranking of entity answers to a given query.
+
+We extend the context comparison, as our setting
+differs from \cite{DBLP:conf/semweb/HoIPBW19}.
+In text-based Qfacts, the context tokens come
+from the same sentence or short snippet.
+In contrast, for the table-based setting, we combine 
+a set of cues from different kinds of context: Q-column header, page title, table caption, DOM-tree headings, same-row cells, and surrounding text window. 
+%\m{This work considers the immediate paragraph preceding and following the table as the text window.}
+%%%GW: I clarified this in Section 3.4 on Contextualization, no need to have it here again
+To reflect this heterogeneity, we assign tunable weights
+to the context tokens based on their origin. 
+
+\vspace{0.1cm}
+\noindent {\bf Definition [Weighted Directed Embedding Distance].}
+% \vspace{0.1cm}
+$$\textit{w-ded}(X,qX) = \Bigg( \sum\limits_{u \in qX} 
+\omega(u) \cdot \min\limits_{v \in X}
+(\sigma(v) \cdot d(u,v))
+\Bigg)
+~/~
+\Bigg( \sum\limits_{u \in qX} \omega(u) \Bigg)$$
+% \vspace{0.1cm}
+with $\omega$ denoting tf-idf-based weights of tokens
+and $\sigma(v)$ denoting the weight of Qfact context
+token $v$ depending on the kind of context from where
+it originates. We have six different $\sigma$
+weights for the six kinds of context considered (see above); they are not word-specific.
+$d(u,v)$ is the word2vec embedding distance between
+two words $u$ (from the query) and $v$ (from the answer candidate). In essence, this directed scoring function finds for each Qquery context word $u$ the best matching token $v$ from the Qfact context, taking context type into account by using $\sigma(v)$.
+% Note that this directed scoring penalizes situations when the Qfact context has many additional tokens that are not present in the query context, to mitigate topical drifts \cite{DBLP:conf/semweb/HoIPBW19}.
+
+
+%%%GW: polished/rewrote this paragraph
+\begin{comment}
+
+Context agreement \textit{w-ded} is then combined with quantity similarity and entity prominence to produce Qfact relevance score:
+\[
+\textit{rel-score}(\mathcal{F}) = \alpha \cdot \textit{w-ded}(X,qX) + \beta \cdot \textit{sim}(q,qq)
++ \gamma \cdot \textit{prom}(e)
+\]
+where $\textit{sim}(q,qq)$ is measured using relative numeric distance, entity prominence $\textit{prom}(e)$ is computed from Wikipedia page-view, and $\alpha$, $\beta$, $\gamma$ are hyper-parameters. Prior work \cite{DBLP:conf/semweb/HoIPBW19} treats quantity condition $qq$ merely as a filter. We extend this by additionally taking quantity similarity into account, which boosts Qfacts, whose quantity $q$ has the same order of magnitude as the query quantity $qq$. 
+For example, when searching for stadiums with a capacity above 50,000, we expect
+all answers to be somewhere between 50,000 and say 200,000, but values in the millions would be suspicious (e.g., when confusing the annual ticket sales with capacity).
+Optionally, we consider also entity prominence to ensures that important entities are prioritized to show to the user.
+\end{comment}
+
+%%%GW: commented out
+
+\begin{comment}
+
+In addition to the context-agreement score {\em w-ded}, we consider another
+signal for a Qfact matching the query, by comparing the Qfact quantity $q$ against
+the query quantity $qq$. Prior work \cite{DBLP:conf/semweb/HoIPBW19} treats quantity condition $qq$ merely as a filter. We extend this 
+by computing a penalty score
+% for $q$ and $qq$: 
+$\textit{pty}(q,qq) \propto  e^{\frac{|q-qq|}{\max(|q|,|qq|)}} - 1$ 
+that penalizes $q$ values that are \textit{excessively} larger or smaller than $qq$.
+% , with parameter $\varepsilon$ controls the sensitivity of the penalty.
+% For queries with conditions other than ``above $qq$'', the score is compute analogously.
+% by additionally taking quantity similarity $\textit{sim}(q,qq)$ into account, using relative numeric distance.
+The intuition here is that $q$ should of the same order of magnitude as $qq$.
+For example, when searching for stadiums with a capacity above 50,000, we expect
+all answers to be somewhere between 50,000 and say 200,000, but values in the millions would be suspicious (e.g., when confusing the annual ticket sales with capacity).
+
+Finally, for the overall ranking of query results, we optionally consider also the entity prominence
+% of the returned entity 
+$\textit{prom(e)}$, computed from Wikipedia page-view statistics, to ensure that important entities are prioritized to show to the user.
+
+
+The overall relevance score of a Qfact for a given Qquery is then set to:
+\[
+\textit{rel-score}(\mathcal{F}) = \alpha \cdot \textit{w-ded}(X,qX) - \beta \cdot \textit{pty}(q,qq)
++ \gamma \cdot \textit{prom}(e)
+\]
+with hyper-parameters $\alpha, \beta, \gamma$.
+\end{comment}
+% \GW{I rewrote this paragraph. Please read carefully. Note that I wanted the penalty effect for q exceeding qq to be very small initially and be influential only when q goes into a different order of magnitude, hence the suggestion for the exponential function!!!} 
+
+% \todo{this exponential function is wrong, it only takes into account the difference of q-qq, not the magnitude: example: 5-10 is different from 50-55, relative numeric distance is better, I rewrote}
+
+
+\begin{comment}
+
+\subsection{Extraction} In this phase, we offline process all input tables to extract Qfacts and save them into a storage. For each web table (Block 1), we preprocess to recognize quantities and detect candidates for each entity mention. Afterwards, our described joint model is applied to disambiguate named entities and find the alignment between quantity and entity columns, with the support of a collection of external text documents (Block 2).
+
+Then, Qfacts $\mathcal{F} = (e,q,X)$ from processed tables are extracted 
+% based on the detected entity annotations and column alignment
+. In particular, 
+%given processed table $\mathcal{T} = (r, c, \mathcal{H},\mathcal{B}, \mathcal{X})$,
+ we extract a Qfact for each row $i$ and column link $\mathcal{C}_{k} 
+\rightarrow
+\mathcal{C}_{v}$, with entity $e \in b_{i,v}$, quantity $q \in b_{i,k}$, and context $X = h_k \cup \{b_{i,?} | ? \neq k, v\} \cup \mathcal{X}$. Here, we include not only the header $h_k$ of the quantity column into $X$, but also other related components of the table: \textit{(1)} cells $b_{i,?}$ in the same row $i$, except $b_{i,k}$ and $b_{i,v}$; and $\mathcal{X}$ -- the table surrounding context, including: \textit{(2)} table caption; \textit{(3)} page title; \textit{(4)} page content (we only take the paragraphs close to the table); and \textit{(5)} additionally for Wikipedia tables, the section titles lying on the XPath of the table, extracted from the page DOM tree. This is because important information to query might not contained in the table alone, but in the components outside it. 
+
+Extracted Qfacts are saved into a storage (Block 3), where entities are augmented with their type information from the KB, and quantities are linked to the QuTree unit catalog \cite{DBLP:conf/kdd/SarawagiC14} to allow comparison.
+
+\subsection{Search \& Ranking} In this phase, we answer given quantity queries by matching them against extracted Qfacts (Block 4).
+First, following \cite{DBLP:conf/semweb/HoIPBW19}, we decompose the input question into Qquery format $\mathcal{Y} = (t^*,q^*,X^*)$ by a rule-based parser. The parser uses a dictionary of YAGO types and a dictionary of quantity units to recognize the target type of answers $t^*$ and the quantity condition $q^*$. Then, all remaining tokens of the query (except stopwords) are included in the query context $X^*$.
+
+We score each candidate Qfact $\mathcal{F} = (e,q,X)$ by perform Qquery-Qfact matching, which consists of entity-type matching, quantity matching, and context matching. Following \cite{DBLP:conf/semweb/HoIPBW19}, based on type information of $e$, we do entity-type matching by discarding $\mathcal{F}$ if $e$ is not an entity of type $t^*$. Then, we do quantity matching between $q$ and $q^*$ with the support of a list of unit conversion rules from QuTree catalog \cite{DBLP:conf/kdd/SarawagiC14}. If $\mathcal{F}$ passes these two filters, we give it a score by matching context. Since Qfact context tokens $X$ might come from various parts of the table, we propose a weighted version of the \textit{directed embedding distance} \cite{DBLP:conf/semweb/HoIPBW19} for context matching as:
+\begin{align*}
+\textit{w-ded}(\mathcal{F}, \mathcal{Y}) 
+% &= \textit{w-ded}(X^* \rightarrow X) \\
+&= \bigg(\sum\limits_{u \in X^*} W(u)\min\limits_{v \in X}\big(L(v)\ d(u,v) \big)\bigg)\big/\sum\limits_{u \in X^*}W(u) 
+\end{align*}
+The only difference between \textit{w-ded} and \textit{ded} is that \textit{w-ded} considers the locational weights $L(v)$ of the Qfact context tokens, which indicates the importance of where the token is (e.g., a match in table header or table caption is more important than in page content). The locational weights of table header, table caption, page/section titles, same-row cells and page content are empirically tuned 
+based on 
+% the results from 
+a small set of ten queries.
+
+%we fix the locational weights of table header, table caption, page/section titles, same-row cells and page content to 1.0, 0.9, 0.8, 0.8 and 0.7, respectively.
+
+\end{comment}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%GW: new contribution, hence need to highlight by its own subsection !!!
+
+\subsection{Corroboration by Inter-Fact Consistency}
+\label{subsec:consscore}
+
+%\vspace{0.1cm}
+%\noindent \textbf{Consistency-based Qfact Corroboration}.
+%
+\begin{comment}
+Scoring using \textit{w-ded} only looks at the candidate Qfact itself 
+(i.e., Qfacts are treated independently). As the query context is relatively short comparing to Qfacts context (combined from various parts of the table), this might put some noise in the results as several tiny cues from Qfact context can totally change its meaning. A potential solution to demote these noisy Qfacts, and as a result, promote good Qfacts is to consider also the similarity between them (i.e., similar Qfacts should be scored close to each other). 
+% \sr{I suppose the idea has two parts - similar facts should score similar, but also, facts that have many closely similar facts should score higher than those with few similar facts?}
+We propose a consistency-based approach to re-score candidate Qfacts, as described below.
+\end{comment}
+
+We use the 
+\textit{w-ded} distances
+% relevance scores 
+between
+candidate answers and the query as 
+%a prior (weakly confident score), to compute for each candidate Qfact a posterior consistency score $\textit{cst}(\mathcal{F})$, by learning information from other Qfacts in the candidate list.
+%%%GW: avoid the wording prior and posterior here, as it is often used to denote Bayesian inference - which is not the case here
+{\em initial scores} for answer ranking.
+%%%GW: give intuition first
+This initial ranking is further improved by considering
+the {\em mutual consistency} among the answer facts
+for the same query.
+To this end, we can exploit that our data often
+yields several Qfacts for the same answer entity.
+If all or most of them agree on their quantities and
+contextual cues, 
+% this should boost their final scores
+their scores should be close
+to each other.
+This idea can be generalized to all answer candidates
+even if they differ in their entities:
+they should still mostly agree on their contextual cues,
+and their quantities should have comparable order
+of magnitude.
+For example, if the candidate pool for answering
+a query about 
+%``British football clubs with value
+%above 1.5 billion pounds'' includes spurious
+%results like 
+``British football stadiums with a seating capacity above 50,000'' includes spurious results like
+%({\small\tt Arsenal FC, 5,925 \pounds}, 
+%$\{$football, London, season, ticket$\}$), 
+%or 
+%({\small\tt Real Madrid, 4,200,000,000 \euro},
+%$\{$football, Spain, asset$\}$),
+(\textit{Wembley Stadium, 32,000,000, 
+``world cup, 1966, TV viewers''}), 
+or 
+(\textit{Maracana Stadium, 78,838,
+``FIFA, Rio, 2014''}),
+these stand out against many good results
+by having the wrong order of magnitude in
+quantities or by missing important contextual cues about UK.
+
+To detect and leverage such situations for
+elimination or demotion of noisy results, 
+we have devised a method for
+consistency-aware corroboration and re-scoring
+of answer candidates.
+This is inspired by earlier work on consistency learning
+for image classification 
+\cite{DBLP:conf/mir/YagnikI07}. 
+Algorithm \ref{algor:2} 
+%sketches a scheme to estimate consistency score 
+%based on a discriminative approach, 
+outlines this method.
+%which we generalize from the earlier work \cite{DBLP:conf/mir/YagnikI07}. 
+%Key insight in the method is the observation that samples that confirm to classifiers learned from an unbiased set of weak hypothesis have a higher probability of correctness. 
+\input{algor/algor2}
+
+% The method is analogous to self-validation.
+% We randomly sample a probe set from the candidate Qfacts list with
+% weakly confident prior scores, and assume the remaining Qfacts
+% to have true estimation to build an estimator. If the prior score
+% of a Qfact in the probe set is close to its quality computed by the
+% estimator, the confidence of the prior score increases. The sampling
+% operation is done multiple times to ensure that the consistency
+% score is not computed from a biased set of ground data.
+
+The method is a form of self-validation,
+%structurally following 
+analogous to
+the principle of cross-validation.
+We randomly sample a probe set from the candidate Qfacts, and use the remaining Qfacts and their initial scores
+as ground-truth for training a quality predictor.
+The learned predictor is applied to the probe set,
+and we keep track of the predicted quality scores
+$\textit{cons-score}(\mathcal{F}_i)$.
+%%%GW: old WSDM-submission text was good, concise and to the point, no need to fill up space
+\begin{comment}
+{\color{blue}
+This sampling and cross-validation step is repeated
+many times
+to ensure that the consistency
+score is not computed from a biased set of ground data.
+% The final output, for each candidate $\mathcal{F}_i$ , is the average quality score
+% from the predictors, aggregated over all cases
+% where $\mathcal{F}_i$ was in the probe set.
+}
+\end{comment}
+
+The difference between the initial score and the consistency score 
+$|\textit{w-ded} - \textit{cons-score}|$ 
+denotes the confidence of the initial score. A high difference between them denotes a noisy Qfact in the candidate list (i.e., either a high-ranked bad-Qfact, or low-ranked good-Qfact), which requires re-scoring. 
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Re-Scoring of Qfacts].}
+We re-score candidate fact $\mathcal{F}$
+%=(e,q,X)$
+with regard to a query
+% $\mathcal{Q} = (qt,qq,qX)$
+%using 
+%interpolation to move the prior score towards the consistency score as follows:
+as a weighted combination of initial 
+score 
+% \textit{rel-score}
+(using $\textit{w-ded}$)
+and consistency-aware $\textit{cons-score}$:
+\[\textit{final-score}(\mathcal{F}) = (1 - \rho) \cdot \textit{w-ded}(\mathcal{F})~ + ~ \rho \cdot \textit{cons-score}(\mathcal{F})\]
+with hyper-parameter $\rho$ to control the re-scoring effect.
+%%%GW{the linear comb of initial and the diff can be rewritten as linear comb of initial and cons-score}
+
+\vspace{0.1cm}
+\noindent \textbf{Learned Predictors.} 
+%As we want to handle re-scoring, even when the number of candidate Qfacts are low, we choose to use a simple k-NN method. 
+As this method requires frequent re-training of
+the predictor, we choose a very simple k-NN technique, which computes $\textit{cons-score}$
+% based on k-nearest-neighbor.
+% We represent Qfacts in a feature vector space, and  $\textit{cons-score}$ 
+% is computed 
+as the average initial scores
+of the $k$ nearest Qfacts in the training set. 
+This avoids the bottleneck of explicit re-training. 
+%{\color{blue}
+We define the distance between Qfacts as the weighted combination of (1) the relative numeric distance between quantities (converted to standard units) and (2) the context similarity. The latter is computed 
+by a vector space model, with features comprising
+% The feature vectors of Qfacts 
+% comprise two signals:
+the \textit{tf-idf} values of context terms weighted by the context item
+from which they originate (column header, table caption, etc.).
+% and the normalized quantity values
+% (converted to standard units). 
+
+%and normalized by their mean value).
+% }
+\begin{comment} 
+\vspace{0.1cm}
+\noindent \textbf{Entity Scoring}. 
+Entity results are generated Qquery-Qfact matching scores. Since Qfacts are generated from different tables, many of them could share the same entity. Hence, we assign each entity a score from one of its Qfacts, which is most relevant to the Qquery. The entities are then ranked by their scores to produce the final results (Block 5).
+\end{comment}
+%%%GW: is this relevant for the consistency corroboration and re-scoring ???
+
+

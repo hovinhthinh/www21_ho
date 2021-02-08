@@ -1,0 +1,43 @@
+
+\begin{table}[t]
+
+% \end{table}
+% \begin{table}[t]
+% \small
+	\centering
+		\caption{Column alignment precision \textit{(macro\_avg)}.}
+	\label{tab:prec_cl}
+	\vspace{\tsq}
+		\begin{tabular}{l|ccc}
+			    \hline
+	    Method &\textit{Wiki\_L-R\_Qt} & \textit{Equity\_Qt} & \textit{Wiki\_Diff}\\ 
+			    \hline
+		 Leftmost & 0.736 & 0.817 & 0.045\\
+ 		 Most-Unique & 0.868 & 0.873 & 0.409\\
+ 		 Closest-Left & 0.728 & 0.674 & 0.705 \\
+ 		 Classifier \cite{DBLP:journals/pvldb/VenetisHMPSWMW11} & 0.864  & 0.717 & 0.597 \\
+		 Iterative CA & 0.934 & 0.900 & 0.769\\ 
+			    \hline
+		\end{tabular}
+% 	\vspace{-1em}
+% 	\vspace{1.5em}
+	
+\end{table}
+\begin{table}[t]
+%  \small
+% \vspace*{0.2cm}
+	\centering
+		\caption{Entity linking precision \textit{(micro\_avg)}.}
+	\label{tab:prec_ed}
+	\vspace{\tsq}
+		\begin{tabular}{l|ccc} 
+			    \hline
+	    Method &\textit{Wiki\_L-R\_Qt} & \textit{Equity\_Qt} & \textit{Wiki\_Diff}\\
+			    \hline
+		  Prior & 0.849 & 0.821 & 0.846\\
+		 EL-MRF \cite{DBLP:conf/semweb/BhagavatulaND15} & 0.893 & 0.863 & 0.902\\
+		 Joint EL\&CA & 0.900& 0.876 & 0.902\\
+			    \hline
+		\end{tabular}
+%	\vspace{1.5em}
+\end{table}

@@ -1,0 +1,287 @@
+\begin{thebibliography}{10}
+
+\bibitem{DBLP:conf/sigir/AlonsoS18}
+O.~Alonso and T.~Sellam.
+\newblock Quantitative information extraction from social data.
+\newblock In {\em The 41st International {ACM} {SIGIR} Conference on Research
+  {\&} Development in Information Retrieval, {SIGIR} 2018, Ann Arbor, MI, USA,
+  July 08-12, 2018}, pages 1005--1008, 2018.
+
+\bibitem{DBLP:series/irs/Balog18}
+K.~Balog.
+\newblock {\em Entity-Oriented Search}, volume~39 of {\em The Information
+  Retrieval Series}.
+\newblock Springer, 2018.
+
+\bibitem{DBLP:conf/semweb/BhagavatulaND15}
+C.~S. Bhagavatula, T.~Noraset, and D.~Downey.
+\newblock Tabel: Entity linking in web tables.
+\newblock In {\em The Semantic Web - {ISWC} 2015 - 14th International Semantic
+  Web Conference, Bethlehem, PA, USA, October 11-15, 2015, Proceedings, Part
+  {I}}, pages 425--441, 2015.
+
+\bibitem{DBLP:conf/wsdm/BondarenkoBVAFP20}
+A.~Bondarenko, P.~Braslavski, M.~V{\"{o}}lske, R.~Aly, M.~Fr{\"{o}}be,
+  A.~Panchenko, C.~Biemann, B.~Stein, and M.~Hagen.
+\newblock Comparative web search questions.
+\newblock In {\em {WSDM} '20: The Thirteenth {ACM} International Conference on
+  Web Search and Data Mining, Houston, TX, USA, February 3-7, 2020}, pages
+  52--60, 2020.
+
+\bibitem{DBLP:conf/er/BraunschweigTL15}
+K.~Braunschweig, M.~Thiele, and W.~Lehner.
+\newblock From web tables to concepts: {A} semantic normalization approach.
+\newblock In {\em Conceptual Modeling - 34th International Conference, {ER}
+  2015, Stockholm, Sweden, October 19-22, 2015, Proceedings}, pages 247--260,
+  2015.
+
+\bibitem{DBLP:journals/pvldb/CafarellaHLMYWW18}
+M.~J. Cafarella, A.~Y. Halevy, H.~Lee, J.~Madhavan, C.~Yu, D.~Z. Wang, and
+  E.~Wu.
+\newblock Ten years of webtables.
+\newblock {\em Proc. {VLDB} Endow.}, 11(12):2140--2149, 2018.
+
+\bibitem{DBLP:journals/corr/abs-2001-03272}
+K.~Chakrabarti, Z.~Chen, S.~Shakeri, and G.~Cao.
+\newblock Open domain question answering using web tables.
+\newblock {\em CoRR}, abs/2001.03272, 2020.
+
+\bibitem{DBLP:journals/pvldb/DengJLLY13}
+D.~Deng, Y.~Jiang, G.~Li, J.~Li, and C.~Yu.
+\newblock Scalable column concept determination for web tables using large
+  knowledge bases.
+\newblock {\em Proc. {VLDB} Endow.}, 6(13):1606--1617, 2013.
+
+\bibitem{DBLP:journals/kais/DiefenbachLSM18}
+D.~Diefenbach, V.~L{\'{o}}pez, K.~D. Singh, and P.~Maret.
+\newblock Core techniques of question answering systems over knowledge bases: a
+  survey.
+\newblock {\em Knowl. Inf. Syst.}, 55(3):529--569, 2018.
+
+\bibitem{DBLP:conf/kdd/0001GHHLMSSZ14}
+X.~Dong, E.~Gabrilovich, G.~Heitz, W.~Horn, N.~Lao, K.~Murphy, T.~Strohmann,
+  S.~Sun, and W.~Zhang.
+\newblock Knowledge vault: a web-scale approach to probabilistic knowledge
+  fusion.
+\newblock In S.~A. Macskassy, C.~Perlich, J.~Leskovec, W.~Wang, and R.~Ghani,
+  editors, {\em The 20th {ACM} {SIGKDD} International Conference on Knowledge
+  Discovery and Data Mining, {KDD} '14, New York, NY, {USA} - August 24 - 27,
+  2014}, pages 601--610. {ACM}, 2014.
+
+\bibitem{DBLP:conf/acl/DongHLS20}
+X.~L. Dong, H.~Hajishirzi, C.~Lockard, and P.~Shiralkar.
+\newblock Multi-modal information extraction from text, semi-structured, and
+  tabular data on the web.
+\newblock In {\em Proceedings of the 58th Annual Meeting of the Association for
+  Computational Linguistics: Tutorial Abstracts, {ACL} 2020, Online, July 5,
+  2020}, pages 23--26, 2020.
+
+\bibitem{DBLP:conf/semweb/DubeyBA019}
+M.~Dubey, D.~Banerjee, A.~Abdelkawi, and J.~Lehmann.
+\newblock Lc-quad 2.0: {A} large dataset for complex question answering over
+  wikidata and dbpedia.
+\newblock In {\em The Semantic Web - {ISWC} 2019 - 18th International Semantic
+  Web Conference, Auckland, New Zealand, October 26-30, 2019, Proceedings, Part
+  {II}}, pages 69--78, 2019.
+
+\bibitem{DBLP:conf/bdc/EberiusBHTAL15}
+J.~Eberius, K.~Braunschweig, M.~Hentsch, M.~Thiele, A.~Ahmadov, and W.~Lehner.
+\newblock Building the dresden web table corpus: {A} classification approach.
+\newblock In I.~Raicu, O.~F. Rana, and R.~Buyya, editors, {\em 2nd {IEEE/ACM}
+  International Symposium on Big Data Computing, {BDC} 2015, Limassol, Cyprus,
+  December 7-10, 2015}, pages 41--50. {IEEE} Computer Society, 2015.
+
+\bibitem{DBLP:conf/semweb/EfthymiouHRC17}
+V.~Efthymiou, O.~Hassanzadeh, M.~Rodriguez{-}Muro, and V.~Christophides.
+\newblock Matching web tables with knowledge base entities: From entity lookups
+  to entity embeddings.
+\newblock In {\em The Semantic Web - {ISWC} 2017 - 16th International Semantic
+  Web Conference, Vienna, Austria, October 21-25, 2017, Proceedings, Part {I}},
+  pages 260--277, 2017.
+
+\bibitem{DBLP:conf/www/FetahuAK19}
+B.~Fetahu, A.~Anand, and M.~Koutraki.
+\newblock Tablenet: An approach for determining fine-grained relations for
+  wikipedia tables.
+\newblock In {\em The World Wide Web Conference, {WWW} 2019, San Francisco, CA,
+  USA, May 13-17, 2019}, pages 2736--2742, 2019.
+
+\bibitem{DBLP:conf/semweb/HoIPBW19}
+V.~T. Ho, Y.~Ibrahim, K.~Pal, K.~Berberich, and G.~Weikum.
+\newblock Qsearch: Answering quantity queries from text.
+\newblock In C.~Ghidini, O.~Hartig, M.~Maleshkova, V.~Sv{\'{a}}tek, I.~F. Cruz,
+  A.~Hogan, J.~Song, M.~Lefran{\c{c}}ois, and F.~Gandon, editors, {\em The
+  Semantic Web - {ISWC} 2019 - 18th International Semantic Web Conference,
+  Auckland, New Zealand, October 26-30, 2019, Proceedings, Part {I}}, volume
+  11778 of {\em Lecture Notes in Computer Science}, pages 237--257. Springer,
+  2019.
+
+\bibitem{DBLP:conf/wsdm/HoPKBW20}
+V.~T. Ho, K.~Pal, N.~Kleer, K.~Berberich, and G.~Weikum.
+\newblock Entities with quantities: Extraction, search, and ranking.
+\newblock In {\em {WSDM} '20: The Thirteenth {ACM} International Conference on
+  Web Search and Data Mining, Houston, TX, USA, February 3-7, 2020}, pages
+  833--836, 2020.
+
+\bibitem{DBLP:journals/access/HuangXHWQFZPW20}
+Z.~Huang, S.~Xu, M.~Hu, X.~Wang, J.~Qiu, Y.~Fu, Y.~Zhao, Y.~Peng, and C.~Wang.
+\newblock Recent trends in deep learning based open-domain textual question
+  answering systems.
+\newblock {\em {IEEE} Access}, 8:94341--94356, 2020.
+
+\bibitem{DBLP:conf/cikm/IbrahimRW16}
+Y.~Ibrahim, M.~Riedewald, and G.~Weikum.
+\newblock Making sense of entities and quantities in web tables.
+\newblock In {\em Proceedings of the 25th {ACM} International Conference on
+  Information and Knowledge Management, {CIKM} 2016, Indianapolis, IN, USA,
+  October 24-28, 2016}, pages 1703--1712, 2016.
+
+\bibitem{DBLP:conf/icde/IbrahimRWZ19}
+Y.~Ibrahim, M.~Riedewald, G.~Weikum, and D.~Zeinalipour{-}Yazti.
+\newblock Bridging quantities in tables and text.
+\newblock In {\em 35th {IEEE} International Conference on Data Engineering,
+  {ICDE} 2019, Macao, China, April 8-11, 2019}, pages 1010--1021. {IEEE}, 2019.
+
+\bibitem{DBLP:conf/semweb/KruitBU19}
+B.~Kruit, P.~A. Boncz, and J.~Urbani.
+\newblock Extracting novel facts from tables for knowledge graph completion.
+\newblock In {\em The Semantic Web - {ISWC} 2019 - 18th International Semantic
+  Web Conference, Auckland, New Zealand, October 26-30, 2019, Proceedings, Part
+  {I}}, pages 364--381, 2019.
+
+\bibitem{DBLP:journals/tacl/KwiatkowskiPRCP19}
+T.~Kwiatkowski, J.~Palomaki, O.~Redfield, M.~Collins, A.~P. Parikh, C.~Alberti,
+  D.~Epstein, I.~Polosukhin, J.~Devlin, K.~Lee, K.~Toutanova, L.~Jones,
+  M.~Kelcey, M.~Chang, A.~M. Dai, J.~Uszkoreit, Q.~Le, and S.~Petrov.
+\newblock Natural questions: a benchmark for question answering research.
+\newblock {\em Trans. Assoc. Comput. Linguistics}, 7:452--466, 2019.
+
+\bibitem{DBLP:journals/pvldb/LimayeSC10}
+G.~Limaye, S.~Sarawagi, and S.~Chakrabarti.
+\newblock Annotating and searching web tables using entities, types and
+  relationships.
+\newblock {\em Proc. {VLDB} Endow.}, 3(1):1338--1347, 2010.
+
+\bibitem{DBLP:conf/icml/LuG03}
+Q.~Lu and L.~Getoor.
+\newblock Link-based classification.
+\newblock In {\em Machine Learning, Proceedings of the Twentieth International
+  Conference {(ICML} 2003), August 21-24, 2003, Washington, DC, {USA}}, pages
+  496--503, 2003.
+
+\bibitem{DBLP:conf/aaai/MadaanMMRS16}
+A.~Madaan, A.~Mittal, Mausam, G.~Ramakrishnan, and S.~Sarawagi.
+\newblock Numerical relation extraction with minimal supervision.
+\newblock In {\em Proceedings of the Thirtieth {AAAI} Conference on Artificial
+  Intelligence, February 12-17, 2016, Phoenix, Arizona, {USA.}}, pages
+  2764--2771, 2016.
+
+\bibitem{DBLP:conf/edbt/OulabiB19}
+Y.~Oulabi and C.~Bizer.
+\newblock Extending cross-domain knowledge bases with long tail entities using
+  web table data.
+\newblock In {\em Advances in Database Technology - 22nd International
+  Conference on Extending Database Technology, {EDBT} 2019, Lisbon, Portugal,
+  March 26-29, 2019}, pages 385--396, 2019.
+
+\bibitem{DBLP:journals/pvldb/PimplikarS12}
+R.~Pimplikar and S.~Sarawagi.
+\newblock Answering table queries on the web using column keywords.
+\newblock {\em {Proc. VLDB Endow.}}, 5(10):908--919, 2012.
+
+\bibitem{reinanda2020knowledge}
+R.~Reinanda, E.~Meij, and M.~de~Rijke.
+\newblock Knowledge graphs: An information retrieval perspective.
+\newblock {\em Foundations and Trends in Information Retrieval}, 2020.
+
+\bibitem{DBLP:conf/edbt/RitzeB17}
+D.~Ritze and C.~Bizer.
+\newblock Matching web tables to dbpedia - {A} feature utility study.
+\newblock In {\em Proceedings of the 20th International Conference on Extending
+  Database Technology, {EDBT} 2017, Venice, Italy, March 21-24, 2017}, pages
+  210--221, 2017.
+
+\bibitem{DBLP:conf/wims/RitzeLB15}
+D.~Ritze, O.~Lehmberg, and C.~Bizer.
+\newblock Matching {HTML} tables to dbpedia.
+\newblock In R.~Akerkar, M.~D. Dikaiakos, A.~Achilleos, and T.~Omitola,
+  editors, {\em Proceedings of the 5th International Conference on Web
+  Intelligence, Mining and Semantics, {WIMS} 2015, Larnaca, Cyprus, July 13-15,
+  2015}, pages 10:1--10:6. {ACM}, 2015.
+
+\bibitem{DBLP:journals/tacl/RoyVR15}
+S.~Roy, T.~Vieira, and D.~Roth.
+\newblock Reasoning about quantities in natural language.
+\newblock {\em {Transactions of the Association for Computational
+  Linguistics}}, 3:1--13, 2015.
+
+\bibitem{DBLP:conf/acl/SahaPM17}
+S.~Saha, H.~Pal, and Mausam.
+\newblock Bootstrapping for numerical open {IE}.
+\newblock In {\em Proceedings of the 55th Annual Meeting of the Association for
+  Computational Linguistics, {ACL} 2017, Vancouver, Canada, July 30 - August 4,
+  Volume 2: Short Papers}, pages 317--323, 2017.
+
+\bibitem{DBLP:conf/kdd/SarawagiC14}
+S.~Sarawagi and S.~Chakrabarti.
+\newblock Open-domain quantity queries on web tables: annotation, response, and
+  consensus models.
+\newblock In {\em The 20th {ACM} {SIGKDD} International Conference on Knowledge
+  Discovery and Data Mining, {KDD} '14, New York, NY, {USA} - August 24 - 27,
+  2014}, pages 711--720, 2014.
+
+\bibitem{DBLP:journals/tkde/ShenWH15}
+W.~Shen, J.~Wang, and J.~Han.
+\newblock Entity linking with a knowledge base: Issues, techniques, and
+  solutions.
+\newblock {\em {IEEE} Trans. Knowl. Data Eng.}, 27(2):443--460, 2015.
+
+\bibitem{DBLP:conf/naacl/TalmorB18}
+A.~Talmor and J.~Berant.
+\newblock The web as a knowledge-base for answering complex questions.
+\newblock In {\em Proceedings of the 2018 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies, {NAACL-HLT} 2018, New Orleans, Louisiana, USA, June 1-6, 2018,
+  Volume 1 (Long Papers)}, pages 641--651, 2018.
+
+\bibitem{DBLP:conf/clef/UngerFLNCCW15}
+C.~Unger, C.~Forascu, V.~L{\'{o}}pez, A.~N. Ngomo, E.~Cabrio, P.~Cimiano, and
+  S.~Walter.
+\newblock Question answering over linked data {(QALD-5)}.
+\newblock In {\em Working Notes of {CLEF} 2015 - Conference and Labs of the
+  Evaluation forum, Toulouse, France, September 8-11, 2015}, 2015.
+
+\bibitem{DBLP:journals/pvldb/VenetisHMPSWMW11}
+P.~Venetis, A.~Y. Halevy, J.~Madhavan, M.~Pasca, W.~Shen, F.~Wu, G.~Miao, and
+  C.~Wu.
+\newblock Recovering semantics of tables on the web.
+\newblock {\em Proc. {VLDB} Endow.}, 4(9):528--538, 2011.
+
+\bibitem{DBLP:conf/acl/WuP94}
+Z.~Wu and M.~S. Palmer.
+\newblock Verb semantics and lexical selection.
+\newblock In {\em 32nd Annual Meeting of the Association for Computational
+  Linguistics, 27-30 June 1994, New Mexico State University, Las Cruces, New
+  Mexico, USA, Proceedings}, pages 133--138, 1994.
+
+\bibitem{DBLP:conf/mir/YagnikI07}
+J.~Yagnik and A.~Islam.
+\newblock Learning people annotation from the web via consistency learning.
+\newblock In {\em Proceedings of the 9th {ACM} {SIGMM} International Workshop
+  on Multimedia Information Retrieval, {MIR} 2007, Augsburg, Bavaria, Germany,
+  September 24-29, 2007}, pages 285--290, 2007.
+
+\bibitem{DBLP:conf/sigmod/YakoutGCC12}
+M.~Yakout, K.~Ganjam, K.~Chakrabarti, and S.~Chaudhuri.
+\newblock Infogather: entity augmentation and attribute discovery by holistic
+  matching with web tables.
+\newblock In {\em Proceedings of the {ACM} {SIGMOD} International Conference on
+  Management of Data, {SIGMOD} 2012, Scottsdale, AZ, USA, May 20-24, 2012},
+  pages 97--108, 2012.
+
+\bibitem{DBLP:journals/tist/ZhangB20}
+S.~Zhang and K.~Balog.
+\newblock Web table extraction, retrieval, and augmentation: {A} survey.
+\newblock {\em {ACM} Trans. Intell. Syst. Technol.}, 11(2):13:1--13:35, 2020.
+
+\end{thebibliography}

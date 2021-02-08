@@ -1,0 +1,94 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/dev/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: main.aux
+The style file: abbrv.bst
+Database file #1: references.bib
+You're missing a field name---line 621 of file references.bib
+ : 
+ : %     title = "Neural Architectures for Fine-grained Entity Type Classification",
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 932 of file references.bib
+ : 
+ : %   title        = {Bridging Quantities in Tables and Text},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 1036 of file references.bib
+ : 
+ : %   title        = {WordNet: A Lexical Database for English},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+A bad cross reference---entry "DBLP:conf/wsdm/BondarenkoBVAFP20"
+refers to entry "DBLP:conf/wsdm/2020", which doesn't exist
+A bad cross reference---entry "DBLP:conf/wsdm/HoPKBW20"
+refers to entry "DBLP:conf/wsdm/2020", which doesn't exist
+A bad cross reference---entry "DBLP:conf/acl/DongHLS20"
+refers to entry "DBLP:conf/acl/2020-t", which doesn't exist
+A bad cross reference---entry "DBLP:conf/mir/YagnikI07"
+refers to entry "DBLP:conf/mir/2007", which doesn't exist
+A bad cross reference---entry "DBLP:conf/er/BraunschweigTL15"
+refers to entry "DBLP:conf/er/2015", which doesn't exist
+A bad cross reference---entry "DBLP:conf/acl/WuP94"
+refers to entry "DBLP:conf/acl/1994", which doesn't exist
+A bad cross reference---entry "DBLP:conf/edbt/OulabiB19"
+refers to entry "DBLP:conf/edbt/2019", which doesn't exist
+A bad cross reference---entry "DBLP:conf/clef/UngerFLNCCW15"
+refers to entry "DBLP:conf/clef/2015w", which doesn't exist
+A bad cross reference---entry "DBLP:conf/naacl/TalmorB18"
+refers to entry "DBLP:conf/naacl/2018-1", which doesn't exist
+A bad cross reference---entry "DBLP:conf/semweb/DubeyBA019"
+refers to entry "DBLP:conf/semweb/2019-2", which doesn't exist
+A bad cross reference---entry "DBLP:conf/sigmod/YakoutGCC12"
+refers to entry "DBLP:conf/sigmod/2012", which doesn't exist
+Warning--I didn't find a database entry for "DBLP:conf/acl/1994"
+Warning--I didn't find a database entry for "DBLP:conf/sigmod/2012"
+Warning--I didn't find a database entry for "DBLP:conf/naacl/2018-1"
+Warning--I didn't find a database entry for "DBLP:conf/semweb/2019-2"
+Warning--I didn't find a database entry for "DBLP:conf/clef/2015w"
+Warning--I didn't find a database entry for "DBLP:conf/er/2015"
+Warning--I didn't find a database entry for "DBLP:conf/wsdm/2020"
+Warning--I didn't find a database entry for "DBLP:conf/mir/2007"
+Warning--I didn't find a database entry for "DBLP:conf/acl/2020-t"
+Warning--I didn't find a database entry for "DBLP:conf/edbt/2019"
+You've used 41 entries,
+            2118 wiz_defined-function locations,
+            789 strings with 16243 characters,
+and the built_in function-call counts, 19863 in all, are:
+= -- 1931
+> -- 1068
+< -- 28
++ -- 413
+- -- 371
+* -- 1437
+:= -- 3050
+add.period$ -- 128
+call.type$ -- 41
+change.case$ -- 297
+chr.to.int$ -- 0
+cite$ -- 41
+duplicate$ -- 769
+empty$ -- 1465
+format.name$ -- 371
+if$ -- 4291
+int.to.chr$ -- 0
+int.to.str$ -- 41
+missing$ -- 42
+newline$ -- 208
+num.names$ -- 90
+pop$ -- 353
+preamble$ -- 1
+purify$ -- 257
+quote$ -- 0
+skip$ -- 632
+stack$ -- 0
+substring$ -- 1354
+swap$ -- 308
+text.length$ -- 28
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 162
+warning$ -- 0
+while$ -- 186
+width$ -- 43
+write$ -- 457
+(There were 14 error messages)

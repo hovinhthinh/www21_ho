@@ -1,0 +1,67 @@
+% \begin{table*}[t]
+% \caption{End-to-end evaluation of TabQs. \sr{Consider also showing for one line, mocks of the actual Wikipedia tables from which the first 4 results are extracted (in super small)? This would increase plasticity of the presentation - as so far the paper contains no real Wikipedia table screenshot}}
+% \vspace{-0.5em}
+% \setlength{\tabcolsep}{0.34em}
+% \centering
+% \begin{tabular}{l|ccc|ccc|ccc|ccc|ccc}
+%           \midrule
+%  \multirow{2}{*}{\textbf{Metric}} & \multicolumn{3}{c}{\textbf{Finance}} & \multicolumn{3}{|c}{\textbf{Transport}} & \multicolumn{3}{|c}{\textbf{Sports}} & \multicolumn{3}{|c}{\textbf{Technology}} & \multicolumn{3}{|c}{\textbf{ All}} \\
+%  \cmidrule{2-16}
+%   &  \textit{Google} & \textit{Qsearch} &  \textit{TabQs} &
+%   \textit{Google} & \textit{Qsearch} &  \textit{TabQs}&
+%     \textit{Google} & \textit{Qsearch} &  \textit{TabQs}&
+%       \textit{Google} & \textit{Qsearch} &  \textit{TabQs}&
+%   \textit{Google} & \textit{Qsearch} &  \textit{TabQs}   \\
+%           \midrule
+% \textbf{Pr.@1} & & & & & & & & & & & & & & &\\
+% \textbf{Pr.@3} & & & & & & & & & & & & & & &\\
+% \textbf{Pr.@5} & & & & & & & & & & & & & & &\\
+% \textbf{Pr.@10} & & & & & & & & & & & & & & &\\
+% \midrule
+% \textbf{Hit@3} & & & & & & & & & & & & & & &\\
+% \textbf{Hit@5} & & & & & & & & & & & & & & &\\
+% \midrule
+% \textbf{MRR} & & & & & & & & & & & & & & &\\
+%           \midrule
+% \end{tabular}
+% \label{table:performance_tabqs}
+% \end{table*}
+
+\begin{table}[t]
+  \small
+  \caption{End-to-end evaluation of TabQs. \note{GG: normal mode}}
+  \note{list mode for Google-q-recall: report separately in text\\
+Pr.1: 0.407\\
+Pr.3: 0.458\\
+Pr.5: 0.476\\
+Pr.10: 0.442\\
+  Rec@10: 0.315}
+  \vspace{-1em}
+  \setlength{\tabcolsep}{0.25em}
+  \centering
+  \begin{tabular}{l|cccc|cccc}
+    \hline
+    \multirow{2}{*}{\textbf{Metric}} & \multicolumn{4}{c}{\textit{\textbf{Query-100}}} & \multicolumn{4}{|c}{\textit{\textbf{Q-recall-177}}}\\
+    \cline{2-9}
+    &  \textit{Google} & \textit{Qsearch} &  \textit{QuTE} & \textit{QuTE-rs} &
+    \textit{Google} & \textit{Qsearch} &  \textit{QuTE} & \textit{QuTE-rs}\\
+    \hline
+    \textbf{Pr.@1}   &  0.340  & 0.690 & 0.490 & 0.510 &  0.209  & 0.390 & 0.528 & 0.525 \\
+    \textbf{Pr.@3}   &  0.310  & 0.617 & 0.493 & 0.528 &  0.198 & 0.367 & 0.487 & 0.492 \\
+    \textbf{Pr.@5}   &  0.280  & 0.559 & 0.484 & 0.519 & 0.193  & 0.328 & 0.456 & 0.465 \\
+    \textbf{Pr.@10}  &  0.274  & 0.492 & 0.453 & 0.486 & 0.169  & 0.285 & 0.416 & 0.429 \\
+    \hline
+    \textbf{Hit@3}   &  0.570  & 0.840 & 0.590 & 0.617 & 0.418  & 0.644 & 0.706 & 0.723 \\
+    \hline
+    \textbf{Rec.@10} & -- & --    & --    & --    &  0.078  & 0.175 & 0.276 & 0.282 \\
+    \textbf{Recall}  & -- & --    & --    & --    & -- & 0.229 & 0.369 & 0.378 \\
+    \hline
+    \textbf{mAP}     & -- & --    & --    & --    & -- & 0.185 & 0.339 & 0.342 \\
+    \hline
+    \textbf{Diff@10}     & -- &  4.180  & --    & 3.830   & -- & 1.254 & -- & 2.684 \\
+    % \textbf{Comm@10}     & -- & --    & --    &  0.570   & -- & --& -- & 1.508 \\
+    
+    \hline
+  \end{tabular}
+  \label{table:performance_tabqs}
+\end{table}

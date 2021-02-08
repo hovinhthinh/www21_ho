@@ -1,0 +1,28 @@
+
+\begin{algorithm}[t]
+%  \small
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\SetKwProg{Fn}{Function}{}{}
+\SetKwRepeat{Do}{do}{while}
+\Input{\ Candidate Qfacts $\mathbb{F} = \{\mathcal{F}_1, \mathcal{F}_2, ... | \mathcal{F}_i = (e_i,q_i,X_i)\}$\\
+%along with their prior scores for the given Qquery}
+with initial scores for Qquery $\mathcal{Q} = (qt,qq,qX)$}
+
+%\Output{\ Posterior consistency scores of candidate Qfacts}
+\Output{\ Consistency-aware scores of candidate Qfacts}
+
+Sample randomly a probe set from the candidate list $\mathbb{P} \subset \mathbb{F}$. \\
+
+Train a Qfact quality predictor from the remaining candidate Qfacts $\mathbb{F} \setminus \mathbb{P}$, using initial scores as ground-truth.
+
+Run the learned predictor on the probe set $\mathbb{P}$
+to compute quality scores for all Qfacts in $\mathbb{P}$.\\
+
+Repeat steps 1-3 a large number of times.\\
+
+The {\em consistency score} of a candidate Qfact, $\textit{cons-score}(\mathcal{F}_i)$, is computed as the average quality predicted, aggregated over all cases where $\mathcal{F}_i$ was in the probe set.\\
+\caption{Consistency-based Re-scoring}
+\label{algor:2}
+\end{algorithm}

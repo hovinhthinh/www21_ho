@@ -1,0 +1,480 @@
+%!TEX root = ../main.tex
+
+\section{Evaluation}
+
+\begin{comment}
+We implemented our approach within a system prototype TabQs. A 
+preliminary demo of TabQs can be found at\footnote{\textcolor{blue}{\url{http://qute-demo.webredirect.org/table/index.html}}}.
+%, and conducted experiments on a Linux machine with 96 CPU cores and 1.5TB RAM. 
+In this section, we demonstrate the results of our experimental evaluation, which focuses on (i) the intrinsic quality of Qfact extraction from web tables and (ii) the extrinsic quality of the end-to-end search system.
+\end{comment}
+
+%\subsubsection{Dataset.} All experiments use a large collection of news articles, compiled from two real world datasets: the \textit{STICS} project \cite{DBLP:conf/sigir/HoffartMW14} with news from 2014 to 2018, 
+%and the \textit{New York Times} archive
+%\cite{nyt}
+% %5843811 + 1765538
+%with news from 1986 to 2008.
+%In total, our corpus consists of 7.6M documents.
+% 
+\subsection{Intrinsic Evaluation of 
+%Quantity Fact Extraction from Web Tables}
+QuTE Components}
+\label{subsec:intrinsicevaluation}
+
+%We conduct experiments to examine the quality of our joint model for entity linking and entity-quantity column alignment.
+We present experimental results on the key components
+of Qfact extraction: entity-quantity column alignment (CA) and
+entity linking (EL).
+The contextualization of Qfacts and
+the inter-fact consistency model matter only
+at query-time, and are thus evaluated in that
+extrinsic use case in Section \ref{subsec:extrinsicevaluation}.
+
+\vspace{0.1cm}
+\noindent \textbf{Hyper-Parameter Tuning.}
+Our method has a number of hyper-parameters
+for Qfact extraction: $\lambda$ in Equation \ref{eq:joint};
+%  and 
+% parameters of the \textit{ext-score} when computing \textit{CA-score}, 
+% and feature weights of the \textit{EL-score} (using MRF inference \todo{not sure if we need to put MRF inference here, as we do not run real full inference}, see \cite{DBLP:conf/semweb/BhagavatulaND15} for details).
+% $\alpha, \beta, \gamma$ for confidence scoring; 
+weights
+for different context categories; and 
+weights for the text-based evidence scoring model.
+For tuning these, we performed a grid search to determine the configuration with the best performance on a withheld 
+validation dataset.
+%small validation table set.
+% small validation set of ten tables.
+
+\vspace{0.1cm}
+\noindent \textbf{Testsets.}
+%We evaluate  the quality of our joint approach using 
+Our experiments use three table collections:
+\squishlist
+\item \textit{Wiki\_Links-Random:} a dataset introduced 
+%from the earlier work
+by \cite{DBLP:conf/semweb/BhagavatulaND15}, 
+sampling 3000 tables from Wikipedia.
+%originally contains 3000 tables randomly drawn from Wikipedia. 
+As we are only interested in tables
+that express quantity properties, 
+we filter this data and obtain a set of 259 tables, referred to as \textit{Wiki\_Links-Random\_Qt}.
+\item \textit{Equity:} a set of 69 
+content-rich tables introduced by \cite{DBLP:conf/cikm/IbrahimRW16}. Analogously to \textit{Wiki\_Links-Random}, we 
+%only pick quantitative relational tables, 
+filter for tables with quantities, 
+which results in a set of 30 tables, called \textit{Equity\_Qt}.
+\item \textit{Wiki\_Diff}. We observe that many tables from the above two datasets are easy cases for column alignment. Very often, the linked E-column is the first one, or the table has only one E-column, so linking all Q-columns to that one is trivially correct. Hence, we compile a new dataset called \textit{Wiki\_Diff}, consisting of 134 Wikipedia tables, which are difficult cases for column alignment:
+there are at least two E-columns and the referred E-column is not the first one,
+%the referred entity column is not the first one,
+or different Q-columns refer to different E-columns.
+\squishend
+All three datasets originally contain only ground truth for entity linking; we annotated them with the proper column alignment.
+% , i.e, which quantity column refers to which entity column.
+
+\vspace{0.1cm}
+%\noindent \textbf{Performance of the Extraction model.}
+\noindent \textbf{Performance Metrics.}
+For the CA task, we 
+%evaluate using the precision of correct links,
+use the precision of correct alignments,
+{macro-averaged} over 
+tables.
+%all Q-columns of all tables. 
+%%%GW: averaging over all Q-columns, right???
+%%%GW: alternative would be to assess complete tables, consider them as correct if all column pairs are correct, and then indeed macro-average over the tables
+%
+Since there are many tables where all Q-columns
+refer to the same E-column, 
+%using 
+macro-averaging is meaningful to give each table the same weight (regardless of its width).
+For entity linking (EL) the metric is the
+precision, micro-averaged over entity mentions.
+%over tables, so that all mentions share the same weight.
+%%%GW: micro-averaged over tables doesn't make sense: averaging over tables would be macro-averaging !!!???
+
+
+%\todo{move results for EL to after CA}
+
+\input{tables/extraction_result}
+
+\vspace{0.1cm}
+\noindent{\bf Results for Column Alignment.}
+%\subsubsection*{Column Alignment} 
+We compare our \textit{Iterative CA} method with text-based evidence
+against several baselines (see Section \ref{subsec:CA-priorworks}): 
+\textit{(1) Leftmost}, 
+%which always links quantity columns to the first column of the table, or the second column if the first one is a quantity column (i.e., index column); and 
+\textit{(2) Most-Unique}, 
+%which always links quantity columns to the column with the most number of unique values (also ignoring index column), prioritizing the left most one in case of a tie.
+\textit{(3) Closest-Left},
+and a 
+\textit{(4) Classifier} with features from column-wise
+properties (column-pair distances, distinct values per column, etc.) as employed by \cite{DBLP:journals/pvldb/VenetisHMPSWMW11}.
+
+The results are shown in Table \ref{tab:prec_cl}. 
+We observe that 
+our \textit{Iterative CA} method outperforms all
+baselines by a large margin over all three datasets.
+%GW: add a strong ``strategic'' sentence:
+This gives our approach a decisive advantage in
+extracting more and better quantity facts from web tables.
+%our column alignment approach outperforms the two baselines, especially by a large margin on \textit{Wiki\_diff} dataset.
+%\todo{Show some evidence sentences from text for column linking}
+\vspace{0.1cm}
+
+
+\noindent{\bf Results for Entity Linking.}
+%\subsubsection*{Entity Linking} 
+Although our EL method mostly follows prior works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}, we report the
+performance of EL when computing jointly with CA,
+%We compare our method, referred to as \textit{Joint EL\&CA}, 
+against two baselines: 
+\textit{(1) Prior} uses 
+%a-priori frequency distributions
+popularity 
+of mention-entity pairs to link each mention to the
+most salient entity that matches the name, and
+\textit{(2) EL-MRF} \cite{DBLP:conf/semweb/BhagavatulaND15}
+is a state-of-the-art method based on MRF
+that incorporates priors, context similarity, row-wise coherence and column-wise coherence, but does not consider CA.
+%which disambiguates using homogeneity score only, without considering entity-quantity column alignment, taking into account additional quantitative clues from text. 
+%The \textit{MRF-only} baseline is actually used 
+%This baseline was employed 
+%by prior works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}
+%(with slightly different feature sets).
+%Our novel method is referred to as \textit{Joint EL\&CA}.
+%however with different sets of features. 
+
+%Table \ref{tab:prec_ed} shows the results of this comparison.
+%compares the performance between our approach and the two baselines on the three datasets. 
+% joint model outperforms \textit{Prior} baseline, and works slightly better than \textit{EL-MRF} baseline. This small jump can be explained that additional quantitative clues coming from column alignment mostly affect the referred entity columns. Improvement on these referred columns could be also propagated to other entity columns through the MRF, however not significantly.
+%On all three datasets, our \textit{Joint EL\&CA}
+%method is as good as or better than the other methods.
+Table \ref{tab:prec_ed} shows that the \textit{Joint EL\&CA}
+method is 
+ as good as and sometimes better than the baselines,
+% on par with and sometimes better than the baselines,
+on all three datasets.
+%It achieves very high gains over the \textit{Prior},
+%despite the fact that the tables contain many prominent entities where Prior could be expected to work well.
+%It achieves very high gains over the \textit{Prior},
+%despite the fact that the tables contain many prominent entities where Prior could be expected to work well.
+Although the improvement over \textit{EL-MRF} is not that large, it is notable and shows the positive impact of integrating CA information on the inference of EL.
+% statistically significant.
+% \todo{t-test if possible, tried, but don't have time enough time for this, make this softer!!!!!}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{\color{blue}
+\vspace{0.1cm}
+\noindent{\bf Ablation Study.} To analyze the influence of different components of %method for column alignment, 
+our CA method,
+we conducted a comprehensive ablation study, by selectively disabling the following components:
+(1) type-based evidence for text-based scoring, and
+(2) coreference resolution for entity mentions when building the background Qfact collection from text.
+The results are shown in Table~\ref{tab:ablation_CA}.  
+
+We observe that without type-lifted evidences, the CA precision decreases by more than 10 percent on all three datasets; for the difficult dataset \textit{Wiki\_Diff}, performance even drops by 50 percent. 
+Exact-entity matching alone is 
+%inefficient as it requires the same information about a table-Qfact to be present also in text, which is often not the case.
+insufficient as it suffers from the sparseness.
+This emphasizes the decisive role of our novel contribution to
+leverage external text evidence, as opposed to prior works that restricted information extraction from web tables to the tables themselves (and their local context).
+%
+Disabling coreference resolution, for collecting background Qfacts from text, also degrades precision, but to much lesser degree: 5 percent at most.
+%also shows visible improvement for calculating evidence score. The reason is that many useful Qfacts cannot be extracted directly from individual sentences, where the entity appears in the form of nominal or pronominal mentions, which requires coreference resolution.
+
+% Coreference resolution can tackle this problem and expand the diversity of the background Qfact collection.
+
+% I wanted to emphasize 'diversity', because many 'kind of' information cannot be found from individual sentence, like ... I don't know, something is never mentioned along with entity in a single sentence.
+
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{tables/ablation_study_CA}
+
+
+\subsection{Extrinsic Evaluation of 
+%the End-to-End Search System}
+%Use Case: 
+Search and Ranking}
+\label{subsec:extrinsicevaluation}
+%We evaluate our end-to-end TabQs system for large scale search on a large collection of web tables.
+This section presents experimental results for an end-to-end use case of
+quantity queries and their result rankings.
+
+\vspace{0.1cm}
+\noindent \textbf{Hyper-Parameter Tuning.}
+Analogously to 
+%the intrinsic evaluation of
+Section \ref{subsec:intrinsicevaluation},
+we tune query-time hyper-parameters for the
+% relevance \textit{rel-score} 
+\textit{w-ded} distance
+and for the mixture with
+\textit{cons-score} (see Section \ref{subsec:consscore})
+by grid search for 
+best Precision@10 on a withheld validation set.
+%of ten queries.
+% and their answers.
+
+\vspace{0.1cm}
+\noindent \textbf{Dataset.}
+We run queries on a large collection of web tables
+compiled from two major sources:
+%\begin{enumerate}[leftmargin=*]
+\squishlist
+\item \textit{TableL} was introduced by \cite{DBLP:conf/icde/IbrahimRWZ19}.
+It contains 2.6M tables from 1.5M web pages, mostly falling under five major topics: finance, environment, health, politics, and sports.
+\item \textit{Wikipedia Tables}, first introduced by \cite{DBLP:conf/semweb/BhagavatulaND15}. 
+%Unfortunately, this corpus is quite old, and only contains the tables alone, without including the web pages' content. Hence, 
+As the original collection from 2015 is outdated,
+we processed a recent version of the English Wikipedia XML dump (March 2020) 
+% using the Sweble parser \cite{DBLP:conf/wikis/DohrnR11}, 
+to construct an analogous dataset, containing a total of 1.8M tables.
+% In particular, we extracted all HTML tables from Wikipedia which have the class attribute ``wikitable'', %
+% resulting in a dataset of 1.8M tables.
+%
+% WD fact 88680715 entity 12741586
+%\end{enumerate}
+\squishend
+%Not all of these tables are relevant for our purpose (relational \& quantitative). Table \ref{tab:stats} shows statistics of the large scale extraction, where we report the number of quantitative relational tables, the number of extracted Qfacts, and the number of extracted entities for each table corpus. In total, we end up with 618K tables and 18.8M extracted Qfacts, ready for large scale search.
+The combined collection was filtered for tables that
+contain both E-columns and Q-columns.
+Table \ref{tab:stats} shows data statistics
+of the large scale extraction, where we report the number of filtered E-Q-tables, the number of extracted Qfacts, and the number of extracted entities for each table corpus.
+In total, we end up with 618K tables and 18.8M extracted Qfacts, ready for large scale search.
+
+%\todo{Wikidata: 555 numeric predicates, MOVE to motivation instead} \sr{555 is quite much - perhaps few have data (e.g., more than 100 statements? Or maybe best to drop this argument}
+
+\input{tables/table_stats}
+
+\vspace{0.1cm}
+\noindent \textbf{Query Benchmarks.}
+We use two sets of telegraphic queries:
+\squishlist
+\item \textit{Q100:} an established benchmark of 100 quantity queries from \cite{DBLP:conf/semweb/HoIPBW19}, 
+featuring questions on a range of quantity measures for four domains: \textit{Finance}, \textit{Transport},
+\textit{Sports} and \textit{Technology}.
+Ground-truth answers are annotated as \textit{relevant} or \textit{irrelevant}
+for the top-10 results of the original, text-based work in \cite{DBLP:conf/semweb/HoIPBW19}.
+We extend these annotations to the top-10 results of all
+methods under comparison.
+However, there is no ground-truth about ideal top-10 results,
+like lists of {\em all} answers or answers sorted in ascending or descending order
+of quantity value (e.g., the largest stadiums for a query about ``sports arenas with
+capacity above 50K''). So there is no way to evaluate recall with this benchmark.
+\item \textit{NewQ150:} To allow evaluating both precision and recall,
+we constructed a new collection of 150 queries, similar in nature to those of Q100
+but such that each of them has a ground-truth answer list.
+To this end, we identified Wikipedia list pages that either capture the
+desired query result or provide a superset that is sorted by the quantity of interest. Examples for this kind of ground-truth is a list of all sprinters
+who ran 100 meters under 10 seconds, which by its sorting, also provides a sub-list
+of results under 9.9 seconds.
+%Examples for this kind of ground-truth are
+% a Wikipedia list of the largest football stadiums, or 
+% a list of all sprinters
+% who ran 100 meters under 10 seconds, which by its sorting, also provides a sub-list
+% of results under 9.9 seconds.
+%our self-compiled 200 questions with a limited number of relevant answers (e.g., building higher than 500 m), which is used for measuring recall. \todo{confirm 200 questions} We call these two question sets \textit{Query-100} and \textit{Q-recall-200}, respectively. The ground truth target answers for questions in \textit{Q-recall-200} are manually collected in advance. Table \ref{table:example_qa} presents some anecdotal example quantity queries and their answers produced by TabQs.
+\squishend
+
+%For each query, top-10 entity answers are manually annotated as \textit{relevant} or \textit{irrelevant} based on the cue given in the corresponding tables from which they are extracted. In the case of Google baseline, as produced answers are snippets, these snippets are annotated as relevant if they mention an entity and a quantity that the query. 
+
+\vspace{0.1cm}
+\noindent{\bf Performance Metrics.}
+For both benchmarks, we report  \textit{Precision@10}, 
+%and \textit{Hit@3}
+% and \textit{Mean-Reciprocal-Rank (MRR)}
+macro-averaged over 100 or 150 queries, respectively. 
+%Moreover, for \textit{Q-recall-200}, as target answers are known, 
+%% the evaluation can be done automatically, 
+For NewQ150, we also report \textit{Recall@10} and \textit{mAP@10} with
+regard to the 
+% top-10
+answers in the ground-truth list.
+% , and when possible also complete \textit{MAP} with regard to the entire ground-truth list of expected answers.
+
+%we also report \textit{Mean-Average-Precision (mAP)}, \textit{Recall@10} and \textit{Recall} (from top \textit{k} answers, where \textit{k} is the groundtruth size, varies for different queries). We do not do this for \textit{Query-100}, as it requires exhaustively annotating a huge pool of candidate answers. %Table \ref{table:performance_tabqs} compares the performance between TabQs and the two baselines.
+% for both question sets. 
+%\todo{comment, show a screenshot of search system?}
+%GW: no screenshot
+
+\vspace{0.1cm}
+\noindent \textbf{Baselines.} 
+% \todo{I think we need to emphasize that we are the only quantity search engine working on tables, otherwise reviewers will say that baselines are not comparable, need something else,... but they can't point out what are the 'else'????}
+%{\color{blue}
+To the best of our
+knowledge, QuTE is the first system addressing quantity filters based on web tables. Therefore, there is no direct reference baseline; instead we compare against two strong baselines
+on quantity search over textual and general web contents:
+%}
+% We compare QuTE against two strong baselines:
+\squishlist
+\item \textit{Qsearch} is a text-based quantity search engine \cite{DBLP:conf/semweb/HoIPBW19,DBLP:conf/wsdm/HoPKBW20}
+(accessible at \textit{\url{https://qsearch.mpi-inf.mpg.de/}}).
+It runs on a collection of 21.7M Qfacts automatically extracted from
+sentences in Wikipedia articles and 
+%two large news corpora,
+%the New York Times archive and the STICS corpus
+%\cite{DBLP:conf/sigir/HoffartMW14}.
+news articles from the New York Times archive and web crawls.
+
+This setup is not comparable to our QuTE method, as the underlying data sources
+are  not the same. Nevertheless, having this baseline gives insights on the value of tapping 
+into web tables.
+%we compare TabQs with the Qsearch \cite{DBLP:conf/semweb/HoIPBW19} system. To the best of our knowledge, this is the only system that can handle quantity queries and produce crisp entity answers as we do. However, while Qsearch searches for answers from text, our TabQs system looks into web tables. \sr{Say here on which texts Qsearch operates, and argue why the comparison is fair (e.g., Wikipedia text vs.\ Wikipedia tables, or a huge text web crawl versus a huge table web crawl} 
+%
+\item \textit{Google} serves as the reference point for search-engine methodology.
+When we pose our benchmark queries, Google returns ten blue links along with preview snippets.
+The results are typically a mix of highly informative snippets, irrelevant snippets,
+and links to authoritative lists. These list pages often contain very good results,
+but the user would have to explicitly access and browse them (as opposed to being
+provided with direct answers in terms of entities).
+\squishend
+%
+For Google results, 
+we assess the top-10 answer quality (with regard to the ground-truth top-10)
+in two different modes: 
+\squishlist
+\item \textit{Direct answers (Google-DA):} 
+%[Google-S]:} 
+%%%GW: this sounds like a variant of the system/baseline itself, but it is merely a different mode of evaluating
+only named entities that appear in the preview snippets are 
+considered. This is a conservative mode, assuming lazy users who do not engage on
+further browsing.
+\item \textit{List expansion (Google-LE):}
+%[Google-L]:} 
+each list-page answer (with the word ``list'' in its title)
+is fetched to materialize the list of entities, in the order of the list itself.
+Conceptually, this is done for each top-10 result of this kind, and the resulting lists
+are concatenated. 
+% The ground-truth list (from Wikipedia) is discounted.
+The top-10 entities are considered as query answers in this mode, where users continue browsing.
+\squishend
+%Second, even through TabQs produces entities as main result, we still want to compare it with a standard search system, which produce snippets. 
+%In particular, we run all benchmark queries on Google web search and retrieve top-10 snippets for each of them.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%\input{tables/performance_tabqs}
+%\vspace{0.1cm}
+\input{tables/performance_Q100+Q150}
+
+\input{tables/example_qa}
+%\noindent \textbf{Performance of TabQs.}
+
+\vspace{0.1cm}
+
+\noindent{\bf Main Results.}
+The precision results for the \textit{Q100} benchmark are shown in
+Table \ref{table:performance_Q100}.
+We see that Qsearch performs best for the top rank alone,
+but drops in precision with more results.
+This is because it is designed to retrieve a few
+high-confidence results and has very limited
+recall due its data based on single sentences.
+QuTE has lower precision but keeps this fairly
+high also for lower ranks, being able to find
+more correct answers from its table collection.
+The weak results for Google-DA show that
+search engines are really missing the ability
+to compute direct answers for quantity filters.
+Google-LE performs better, benefitting from
+list expansion because it often has one or two
+good super-lists of proper results in its 10 
+``blue links''.
+%
+
+The results for the \textit{NewQ150} benchmark are shown in
+Table \ref{table:performance_newQ150},
+including recall and mAP for the top-10 query results.
+Here we see that QuTE clearly outperforms all
+baselines, especially in terms of recall@10 and
+mAP@10. Extracting Qfacts from web tables with high yield
+enables QuTE to compute many correct answers. 
+Qsearch is limited by its text-based pool of candidate answers.
+The search engine again shows its missing support
+for quantity filters in direct-answers mode;
+in list-expansion mode, it performs much better
+but is still inferior to QuTE.
+%
+
+Table \ref{table:example_qa} shows a few anecdotal query results obtained by QuTE.
+%
+
+\input{tables/ablation_study_QQ}
+%{\color{blue}
+
+\vspace{0.1cm}
+\noindent{\bf Ablation Study.} 
+%To provide a fine-grained assessment on the quantity querying module of QuTE, 
+To obtain insight into which components contribute how much,
+we performed an in-depth ablation study, by 
+(1) discarding table-context categories from the \textit{contextualization} step: dropping table captions, page titles, etc., except the Q-column header which was always kept as the most vital cue,
+%(e.g., table caption, page title, etc.), except Q-column header;
+and (2) disabling the inter-fact corroboration phase. 
+The results 
+of this study 
+are shown in Tables \ref{table:ablation_study_q100} and \ref{table:ablation_study_q150} for Q100 and NewQ150 benchmarks, respectively. 
+
+% From both tables, we can see that page title has a considerable influence on the context matching.
+%From the study, 
+We observe that page titles 
+%is the most important component in 
+are the most important element for the contextualization step; discarding them led to a substantial drop in performance. 
+%From both tables, we can see that page title has the highest influence on the results that the performance will drop considerably if we discard this component from the Qfact context. 
+%plays a very important role and 
+%that the performance will drop dramatically if we discard this component from the Qfact context. 
+As for the other context categories, their disabling resulted
+in some performance fluctuation, but overall their influence is
+relatively minor.
+So the bottom line is that page titles and column headers are crucial for Qfact extraction, and additional context categories do not have substantial benefits due their inherent noise.
+
+The results also show that the inter-fact consistency corroboration is a vital component that improves the quality of top-10 results. Though the improvement is small (ca. 2 percent), the p-value from a paired t-test suggests that this improvement is statistically significant (0.034 and 0.019 for Q100 and NewQ150 benchmarks).
+
+% This is ok!!
+
+%The results also show that the inter-fact consistency corroboration is a vital component that improves the top-10 quality 
+%by a small but notable and statistically significant margin 
+%(of ca. 2 percent). \GW{todo: p-values for paired t-test!!!}
+%by improvement of top-10 results due to re-ranking using inter-fact consistency learning method is little, but notable and statistically significant. 
+
+%The improvement of re-ranking using inter-fact consistency is little, but notable and statistically important.
+%}
+%\input{tables/system_diff}
+%%%GW: the story about tables-vs-text is ok, but not a real contribution and not deeply insightful either - don't emphasize by including a table!
+
+
+\vspace{0.1cm}
+\noindent{\bf Text-based 
+vs. Table-based Search.}
+In terms of precision,  Table~\ref{table:performance_Q100} %and~\ref{table:performance_newQ150} 
+%%%GW: not really true for NewQ150, hence commented out
+% suggests that QuTE and Qsearch yield comparable quality.
+suggests
+% indicate 
+that table-based (QuTE) and text-based query answering (Qsearch) produce results of comparable quality.
+ Does that imply that they are interchangeable? 
+However, a closer analysis shows that they are not
+simply interchangeable, but rather return complementary results.
+% To investigate this, in Table~\ref{table:system_diff} we plot the average number of correct top-10 results that are unique to either method. 
+For Q100, each of the two methods has about
+45\% unique answers in their correct top-10
+(not found by the other method).
+%As one can see, more than 18\% of all results returned from tables are not returned from text, while for text-based results, the fraction is between 8\% and 44\%. We thus conclude that both paradigms hold significant complementary potential.
+For NewQ150, which tends to have more difficult queries,
+the fractions are 18\% for QuTE and 8\% for Qsearch.
+
+We illustrate the complementarity of text and tables by a challenging example: \emph{``airplanes with more than 12000 kilometers range''}.
+%- the difficulty being that range is not an inbuilt property like ``wingspan'' or ``length'', thus does not appear often in simple contexts. 
+Qsearch returns 7 answers, out of which 5 are correct 
+(2 relate to routes involving stops); 
+%while 
+%the table-based system 
+QuTE finds a table \emph{``flight distance records''}, which %although not providing full coverage,
+contains 9 correct results. Only one answer (Boeing-787) is
+retrieved by both methods.
+%shared among the two result sets, while all other results are unique to their paradigms.
+

@@ -1,0 +1,404 @@
+%%
+%% This is file `sample-authordraft.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `authordraft')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-authordraft.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% The first command in your LaTeX source must be the \documentclass command.
+\documentclass[sigconf,  % authordraft 
+% nonacm
+]{acmart}
+
+\usepackage[T1]{fontenc}
+%\usepackage{lmodern}
+%\usepackage[utf8]{inputenc}
+%\usepackage{amsfonts}
+\usepackage{eurosym}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{booktabs}
+
+%\usepackage{epsfig} 
+%\usepackage{cite}
+\usepackage{color}
+
+% \usepackage{hyperref}
+
+\usepackage[noend,ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{multirow}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{balance}
+
+\usepackage{float}
+
+%\usepackage{subfig}
+
+
+    
+% \usepackage[para]{footmisc}
+
+\usepackage[inline]{enumitem}
+
+\newtheorem{task}{Task}
+
+% \setlength{\textfloatsep}{1.5em} 
+% \setlength{\floatsep}{1.5em} 
+% \setlength{\dbltextfloatsep}{1.5em}  % sep for 2-col-span floats
+
+\newlength{\tsq}
+\setlength{\tsq}{-1em}
+
+
+\newcommand{\squishlist}{
+ \begin{list}{$\bullet$}
+  { \setlength{\itemsep}{0pt}
+     \setlength{\parsep}{1pt}
+     \setlength{\topsep}{1pt}
+     \setlength{\partopsep}{0pt}
+     \setlength{\leftmargin}{1em}
+     \setlength{\labelwidth}{1em}
+     \setlength{\labelsep}{0.5em} } }
+ \newcommand{\squishend}{\end{list}}
+
+\newcommand{\kp}[1]{\textit{\textcolor{violet}{KP: #1}}}
+\newcommand{\GW}[1]{{\color{blue}GW: #1}}
+\newif\ifdraft\drafttrue
+\ifdraft
+\newcommand{\todo}[1]{{\textcolor{red}{TH: #1}}}
+\newcommand{\note}[1]{{\textcolor{red}{NOTE: #1}}}
+\newcommand{\m}[1]{{\textcolor{red}{#1}}}
+\else
+\newcommand{\todo}[1]{}
+\newcommand{\note}[1]{}
+\fi
+
+\newcommand{\sr}[1]{{\leavevmode\color{blue}SR: #1}}
+
+
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2021}
+\acmYear{2021}
+\acmDOI{xx.xxxx/xxxxxxx.xxxxxxx}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[WWW 2021]{The Web Conference}{April 19--23, 2021}{Ljubljana, Slovenia}
+\acmBooktitle{WWW 2021: The Web Conference, April 19--23, 2021, Ljubljana, Slovenia}
+% \acmConference[WSDM 2021]{ACM International WSDM Conference}{March 08--12, 2021}{Jerusalem, Israel}
+% \acmBooktitle{WSDM 2021: ACM International WSDM Conference,
+%   March 08--12, 2021, Jerusalem, Israel}
+\acmPrice{15.00}
+\acmISBN{[ISBN]}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%GW: no fiddling with style parameters
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+%\title[Searching for Entities with Numerical Constraint in Text]{Searching for Entities with Numerical Constraint in Text}
+%\title[TabQs: Searching for Entities with Quantity Constraints from Quantitative Relational Web Tables]
+%{TabQs: Searching for Entities with Quantity Constraints\\ from Quantitative Relational Web Tables}
+\title{Extracting Contextualized Quantity Facts from Web Tables}
+%%%GW: title should reflect the methodological contribution
+%%%this paper should not be pitched as a system (demo) paper
+%%%also de-emphasize query processing, as the novelty over ISWC 2019 paper is limited
+%
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+% \author{Anonymous Authors}
+%  \email{anonymous@email}
+%  \affiliation{
+%       \institution{Anonymous Affiliation}
+%   }
+
+\author{Vinh Thinh Ho}
+\email{hvthinh@mpi-inf.mpg.de}
+\affiliation{
+%  \institution{Max Planck Institute for Informatics}
+   \institution{Max Planck Institut f\"ur Informatik}
+ \city{Saarbr\"ucken}
+ \country{Germany}
+}
+
+\author{Koninika Pal}
+\email{kpal@mpi-inf.mpg.de}
+\affiliation{%
+    \institution{Max Planck Institut f\"ur Informatik}
+ \city{Saarbr\"ucken}
+ \country{Germany}
+}
+
+\author{Simon Razniewski}
+\email{srazniew@mpi-inf.mpg.de}
+\affiliation{%
+   \institution{Max Planck Institut f\"ur Informatik}
+ \city{Saarbr\"ucken}
+ \country{Germany}
+}
+
+\author{Klaus Berberich}
+\email{kberberi@mpi-inf.mpg.de}
+\affiliation{%
+   \institution{Max Planck Institut f\"ur Informatik}
+     \institution{htw saar}
+ \city{Saarbr\"ucken}
+ \country{Germany}
+}
+
+\author{Gerhard Weikum}
+\email{weikum@mpi-inf.mpg.de}
+\affiliation{
+   \institution{Max Planck Institut f\"ur Informatik}
+ \city{Saarbr\"ucken}
+ \country{Germany}
+}
+
+
+% \renewcommand{\shortauthors}{anonymous}
+
+\begin{abstract}
+%
+%%%problem and what it involves
+Quantity queries, with filter conditions on quantitative
+measures of entities, are 
+%so far out of reach 
+beyond the functionality 
+of search engines and QA assistants.
+%%% not supported by search engines and QA assistants. 
+%%% SR: "out of reach" brings imo out more that it is not just due to a lack of implementation, but due to missing methodology
+To enable such queries over web contents,
+this paper develops 
+a novel
+method for automatically extracting
+quantity facts from ad-hoc web tables.
+%%%GW: or should we say "the first method for ..."?
+%%%SR: Yes I would say "the first" here - "a novel method for" sounds like there were already N works with similar output
+This involves recognizing quantities, with normalized values and units,
+aligning them with the proper entities, and contextualizing
+these pairs with informative cues to match sophisticated queries with
+modifiers. 
+%
+%%%approach and contribution
+Our method
+%method performs joint inference on entity linking and on
+%%%GW: drop EL as a major contribution
+ includes a new approach to aligning quantity columns
+to 
+%their respective 
+entity columns.
+%\color
+%entity-quantity column alignment. 
+%The latter was oversimplified in prior works
+Prior works 
+%by assuming 
+assumed
+a single subject-column per table,
+whereas our approach is geared for complex tables and leverages
+external corpora as evidence.
+For contextualization, we identify informative cues from 
+text and structural markup that surrounds a table.
+For query-time fact ranking, we devise a new scoring technique that
+exploits both context similarity and inter-fact consistency.
+% SR: Expanded this point slightly
+%technique for consistency corroboration.
+%corroboration technique
+%based on consistency learning.
+Comparisons of our building blocks against state-of-the-art baselines
+and extrinsic experiments with two query benchmarks demonstrate the 
+benefits of our method.
+%
+\end{abstract}
+
+\begin{comment}
+\begin{abstract}
+% below is old abstract
+% Quantities appear in search queries in numerous forms: skyscrapers higher than 1000 ft, athletes who ran 200m under 20s, companies with annual profit above 10 billion USD, etc. Web tables are a rich source of information containing answers for this kind of queries.
+% Modern search engines and QA systems
+% can efficiently handle queries in the form of lookups (e.g., what is Bezos's net worth), which need to exploit only relational structures embedded in web tables for queried entities. But they fail to produce crisp answers to the queries involving quantity constraints as they disregard the reasoning over quantitative information.  
+% In this paper, we develop a full-fledged QA system called TabQs that tackles queries with quantity constraints by harnessing quantitative  contextual information about entities presented in web tables. In particular, we propose a framework for extracting quantity facts from web tables, and a matching model to produce answers for given quantity queries. Experiments on real-world data demonstrate the effectiveness of our QA system on a set of benchmark questions, collected by crowdsourcing.
+
+
+%%%problem and what it involves
+Quantity queries, with filter conditions on quantitative
+measures of entities, are so far out of reach of search engines and QA assistants.
+%%% not supported by search engines and QA assistants. 
+%%% SR: "out of reach" brings imo out more that it is not just due to a lack of implementation, but due to missing methodology
+To enable such queries over web contents,
+this paper develops a novel %the first 
+method for automatically extracting
+quantity facts from ad-hoc web tables.
+%%%GW: or should we say "the first method for ..."?
+%%%SR: Yes I would say "the first" here - "a novel method for" sounds like there were already N works with similar output
+This involves recognizing quantities, with normalized values and units,
+aligning them with the proper entities, and contextualizing
+these pairs with informative cues to match sophisticated queries with
+modifiers. 
+%
+%%%approach and contribution
+Our method performs joint inference on entity linking and on
+entity-quantity column alignment. The latter was oversimplified
+in prior works by assuming a single subject-column per table,
+whereas our approach is geared for complex tables and leverages
+external corpora as evidence.
+For contextualization, we identify informative cues from 
+text and structural markup that surrounds a table.
+For query-time fact ranking, we devise a new scoring technique that
+exploits both context similarity, and inter-fact consistency.
+% SR: Expanded this point slightly
+%technique for consistency corroboration.
+%corroboration technique
+%based on consistency learning.
+Comparisons of our building blocks against state-of-the-art baselines
+and extrinsic experiments with a query benchmark demonstrate the 
+%superiority
+%advantages
+benefits
+of our method.
+
+
+\end{abstract}
+\end{comment}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+%\begin{CCSXML}
+%<ccs2012>
+% <concept>
+%  <concept_id>10010520.10010553.10010562</concept_id>
+%  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
+%  <concept_significance>500</concept_significance>
+% </concept>
+% <concept>
+%  <concept_id>10010520.10010575.10010755</concept_id>
+%  <concept_desc>Computer systems organization~Redundancy</concept_desc>
+%  <concept_significance>300</concept_significance>
+% </concept>
+% <concept>
+%  <concept_id>10010520.10010553.10010554</concept_id>
+%  <concept_desc>Computer systems organization~Robotics</concept_desc>
+%  <concept_significance>100</concept_significance>
+% </concept>
+% <concept>
+%  <concept_id>10003033.10003083.10003095</concept_id>
+%  <concept_desc>Networks~Network reliability</concept_desc>
+%  <concept_significance>100</concept_significance>
+% </concept>
+%</ccs2012>
+%\end{CCSXML}
+
+%\ccsdesc[500]{Computer systems organization~Embedded systems}
+%\ccsdesc[300]{Computer systems organization~Redundancy}
+%\ccsdesc{Computer systems organization~Robotics}
+%\ccsdesc[100]{Networks~Network reliability}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+
+%\keywords{Semantic Search, Question Answering, Information Extraction,
+%%Numeric 
+%Quantities, Web Tables}
+\keywords{Information Extraction, Quantity Facts, Web Tables}
+
+%% A "teaser" image appears between the author and affiliation
+%% information and the body of the document, and typically spans the
+%% page.
+
+%\begin{teaserfigure}
+%  \includegraphics[width=\textwidth]{sampleteaser}
+%  \caption{Seattle Mariners at Spring Training, 2010.}
+%  \Description{Enjoying the baseball game from the third-base
+%  seats. Ichiro Suzuki preparing to bat.}
+%  \label{fig:teaser}
+%\end{teaserfigure}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+
+% \titlenote{This paper has been accepted at WWW 2021.}
+
+\maketitle
+
+
+\input{sections/10-intro}
+\input{sections/15-Background}
+\input{sections/30-numerical_fact_extraction}
+\input{sections/36-scoring_model}
+\input{sections/40-matching_new}
+\input{sections/60-evaluation}
+\input{sections/70-related_work.tex}
+\input{sections/80-conclusion.tex}
+
+
+
+%\paragraph*{Acknowledgements.}
+
+%\input{bib.tex}
+% \clearpage\newpage
+\bibliographystyle{abbrv}
+\bibliography{references}
+% \clearpage
+% \newpage
+% \input{sections/appendix.tex}
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-authordraft.tex'.

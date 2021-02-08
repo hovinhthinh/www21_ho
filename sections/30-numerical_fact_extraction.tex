@@ -1,0 +1,878 @@
+%!TEX root = ../main.tex
+
+%\section{QFact Extraction From Web Tables}
+%\section{Entity Linking \& Column Alignment}}
+%\label{sec:extract}
+
+\begin{comment}
+In this section, we describe our method for extracting Qfacts from web tables, which is done in a quantity-centric manner. For each quantity of the input table, we find the entity to which it refers, and the context tokens that express the their relation. 
+We rely on the following characteristics of relational tables for extracting Qfacts:
+\squishlist
+\item First, each quantity and its referred entity are on the same row.
+\item Second, quantities of the same column refer to entities of the same column.
+\item Third, quantities of the same column refer to (mostly) the same context, which is mainly expressed by the column header, might including some external cues from the table context. Note that contexts of quantities on the same column might slightly differ as they could also be affected by other tokens of the same row.
+\squishend
+% We rely on the following four assumptions for extracting Qfacts:
+% \begin{itemize}
+% \item First, each quantity carries information about only one entity in the table. 
+%  \sr{so a table showing for all pairs of clubs how they played against each other would be out of scope - this excluded case seems more important to mention to me than unions of entities. In comparison, the other assumptions below look like trivialities to me.}
+% \item Second, each quantity and its referred entity should be in the same row.
+% \item Third, quantities of the same column refer to entities of the same column.
+% \item Finally, quantities of the same column refer to the same context.
+% \end{itemize}
+% \noindent These assumptions reflect the nature of relational table structure. Unlike in natural text, where quantity might contains information about more than one entity (e.g., \textit{``China and India currently account for about 37\% of the entire global population''} -- the quantity 37\% refers to both China and India), the structure of tables implies the isolation of information between data rows (i.e. removing one row does not affect the understanding of other rows), and each column usually represents additional information for another one, which is especially frequent in case the column is quantity. The relation between each two cells on the same row of the connected entity-quantity columns are usually the same, where its meaning is mainly expressed by the headers, might including some external cues from the table context. One example of table that breaks these assumptions is when one cell contains more than one entity (e.g., \textit{``China \& India''} both in one cell). However, this kind of table is infrequent and hence we do not support.
+%(we mark these cells as \textit{none} instead of dropping the whole table).
+
+% \noindent These assumptions reflect the nature of relational table structure. Unlike in natural text, where quantity might contains information about more than one entity (e.g., \textit{``China and India currently account for about 37\% of the entire global population''} -- the quantity 37\% refers to both China and India), the structure of tables implies the isolation of information between data rows (i.e. removing one row does not affect the understanding of other rows), and each column usually represents additional information for another one, which is especially frequent in case the column is quantity. The relation between each two cells on the same row of the connected entity-quantity columns are usually the same, where its meaning is mainly expressed by the headers, might including some external cues from the table context. One example of table that breaks these assumptions is when one cell contains more than one entity (e.g., \textit{``China \& India''} both in one cell). However, this kind of table is infrequent and hence we do not support.
+
+
+\noindent With these characteristics, the Qfacts extraction task is turned into a column alignment problem. In particular, for each quantity column of the input table, we want to find an entity column to which it refers and the context that expresses their relation. Below, we describe in detail our approach for extracting Qfacts from tables, which consists of two main phases: \textit{Preprocessing} and \textit{Column Alignment}.
+
+
+\subsection{Table Preprocessing}
+In this phase, we preprocess each input table by detecting quantities and entity candidates appearing in table's cells. Given raw input table $\mathcal{T} = (r, c, \mathcal{H},\mathcal{B}, \mathcal{X})$, we preprocess $\mathcal{T}$ by the following steps:
+
+\input{tables/example_table_preprocessed}
+
+\vspace{0.1cm}
+\noindent \textbf{Recognizing Quantities.}
+We pre-process the input table to recognize quantities appearing in table's cells. Unlike in text, where the quantity value and unit go along each other, unit of table quantities might appear in the column header. Moreover, the numeric values in the column body could sometimes
+% sometimes do not represent quantity values, because they are 
+be affected by a multiplier (e.g., thousand, million), which also appears in the header .
+
+To recognize quantities in web tables, we use a combination of the two previous works: QEWT \cite{DBLP:conf/kdd/SarawagiC14} -- providing a table column unit annotator based on a probabilistic context free grammar; and Illinois Quantitifer \cite{DBLP:journals/tacl/RoyVR15} -- a tool for extracting quantity from text. We apply the Illinois Quantitifer on each individual body cell $b_{i,j}$ of the input table to detect quantity value and unit (if available). We also run QEWT on each table header $h_k$ to detect a unit and (optional) a multiplier, which apply for its corresponding column. The quantity values in body cells are multiplied with the multiplier if it is available. Moreover, if both the header and the body cell provide quantity units, we prioritize using the one given in the header (detected by QEWT), as we observed that units of body cells given by Illinois Quantitier are more noisy. Detected quantities are linked to the QuTree unit catalog \cite{DBLP:conf/kdd/SarawagiC14}, which provides various units and conversion factors over different measurements, so that they are comparable.
+
+\vspace{0.1cm}
+\noindent \textbf{Detecting Entity Candidates.} 
+In this step, we detect entity mentions in table cells. For each mention, we find a set of candidate knowledge base entities that it could link to, which will be disambiguated later. For each cell $b_{i,j}$ of the input table with text content $t$, we identify a potential mention $m$ as the longest substring of $t$ that has non-zero probability $P(e|m) > 0$ for some entity $e$. The set of candidate entities $C(m)$ for the mention $m$ is determined as all those $e$, i.e., $C(m) = \{e|P(e|m) > 0\}$.
+\begin{example}
+With $m =\textit{``Bayern''}$, $C(m)$ includes: 
+\textit{<KB:Bayern\_(song)>}, 
+\textit{<KB:Bavaria\_(Germany)>},  
+\textit{<KB:FC\_Bayern\_Munich>},
+etc.
+\qed
+\end{example}
+We pre-compute the prior probability $P(e|m)$ for entities of the YAGO knowledge base \cite{DBLP:conf/www/SuchanekKW07} from hyperlinks in two corpora: Wikilinks \cite{singh2012wikilinks} and Wikipedia.
+% (both text + tables).
+
+\vspace{0.1cm}
+\noindent \textbf{Annotating Columns.}
+Based on the quantities and entity candidates annotations, we assign each cell $b_{i,j} \in \mathcal{B}$ as either \textit{entity-cell}, \textit{quantity-cell}  or \textit{none-cell} (if it does not contain entity or quantity, or we cannot recognize them).
+%In case a cell contains both entity and quantity, we assign them as \textit{none-cell}.
+Then, we mark each column of the table as either \textit{quantity-column} or \textit{entity-column}, based on the majority of quantity or entity mentions from the column's cells.  
+Tables \ref{table:ExampleTablePreprocessed} shows an example of this preprocessing step.
+
+
+%or \textit{none-column}. In particular, we label a column as \textit{quantity-column} if at least 50\% of its body cells are \textit{quantity}, \textit{entity-column} if at least 50\% of its body cells are \textit{entity}, and \textit{none-column} otherwise.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+\subsection{Entity Linking (EL)}
+\label{subsec:EL}
+
+%\begin{definition}[Entity Assignment] 
+\noindent{\bf Definition [Entity Assignment].} 
+Given a preprocessed table ${T}$ with 
+a set of 
+entity mentions $\{m_1, m_2, ...\}$, an entity assignment $\Phi$ is a 
+% (possibly partial)
+mapping of mentions onto entities in a KB:
+$\Phi: m_i \rightarrow e_i \in \mathcal{C}(m_i)$
+where $\mathcal{C}(m_i)$ is the set of candidate entities for $m_i$.
+%Putting into words, for entity linking, we want to choose the right entity for each mention that best interprets the table.
+%\end{definition}
+\vspace{0.1cm}
+
+There is ample prior work on entity linking for web tables (e.g., \cite{DBLP:journals/pvldb/LimayeSC10, DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16, DBLP:conf/semweb/EfthymiouHRC17, DBLP:conf/edbt/RitzeB17}). We mostly follow 
+\cite{DBLP:conf/semweb/BhagavatulaND15}, 
+%but devise an important extension.
+with an extension regarding entity types.
+% The $\textit{homogeneity}(\theta)$ score reflects the coherence of each candidate entity in $\theta$ with the table context and other candidate entities. The green lines in Figure \ref{fig:scoring} depict these entity connections.
+% In this work, we adopt Markov Random Fields, which have been successfully employed for entity disambiguation in web tables by previous works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}. Our graphical model is a light-weight modified version from these works.
+%, where we restrict potential functions to contain entity variables within the same column.
+{\color{blue}
+This method adopts Markov Random Fields, presents the table's entity mentions as a set of variables $H = \langle E_1, E_2, ... E_k \rangle$ where $E_i$ refers to the target entity of mention $m_i$ of the table. The MRF defines a set of potential functions $\Psi$ that capture the relationships between these variables; and then represents the joint probability distribution of $H$ as follows:
+%\[
+%\textit{h\_score}(\mathcal{C}_v|\theta) = \textit{Pr}(H_v[\theta]) = Z^{-1}\prod_{f \in F_\Phi}\Phi_f
+% \]
+\[
+\textit{EL-score}(\Phi) = \textit{Pr}(H[\Phi]) = Z^{-1}\prod_{f \in F_\Psi}\Psi_f
+ \]
+where $H[\Phi]$ is a realization of $H$ based on entity  assignment $\Phi$,
+ $F_\Psi$ is the set of $H$'s variable subsets over which $\Psi$ is defined, and $Z$ is a scaling factor to give the true probabilities. For simplicity, we omit $Z$ and use a log-likelihood version when computing \textit{EL-score}.
+ }
+ For defining potential functions $\Psi$, 
+%  following previous works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}, we restrict to use edge-observation and node-observation features only. In our work, we modelize the joint distribution $\textit{Pr}(H)$ using the following features:
+the following signals are combined into the graphical model:
+ 
+% This method combines the following signals into
+% a probabilistic graphical model:
+\squishlist
+\item {\em Prior probability:} the likelihood that an entity is mentioned, estimated from popularity statistics (e.g., Wikipedia page visits or article lengths)
+and frequencies of href anchors.
+\item {\em Context similarity:}
+the degree of the context of mention $m$ in table cell $b_{i,j}$ matching the description of candidate entity $e$ (e.g., by
+Wikipedia excerpts 
+on $e$ 
+or derived embeddings).
+The context of $b_{i,j}$ comprises table header $H$, row $R_i$,
+column $C_j$ and table context
+$\mathcal{X}$ (caption, page title, etc.).
+\item {\em Row-wise coherence:} 
+mentions that appear in the same row 
+$b_{i,*}$ should be mapped to 
+semantically related entities, with relatedness
+from Wikipedia signals (e.g., inlink overlap)
+or embedding-based distance.
+\item {\em Column-wise coherence:} 
+mentions in the same column $b_{*,j}$
+should be mapped to semantically related entities.
+\squishend
+We construct the graphical model from these constituents
+% we construct a 
+%Markov Random Field (MRF) and perform Monte Carlo sampling to
+% graphical model and
+and approximate the best entity assignment $\Phi$,
+% which maximizes $\textit{EL-score}(\Phi)$, 
+similar to
+\cite{DBLP:conf/semweb/BhagavatulaND15}.
+% The random variables are all mentions, with entities as values, and the factors 
+%(potential functions)
+% couple random variables by the above constituents.
+
+%\GW{so far, we follow the literature; next we present our extension on homogeneity}
+
+\todo{maybe remove the type agreement below}
+
+Our extension of this method builds on the hypothesis that all (or most) entities in the same column should share an informative semantic type, such as 
+{\small\tt football team} or {\small\tt sports arena}.
+This can be seen as refinement of the factors for per-column coherence, but it also relaxes the
+relatedness between same-column mentions and
+solely focuses on the type cues.
+
+We can easily find high-level common types
+such as {\small\tt organization}
+or {\small\tt person}.
+These are insufficient signals, though.
+We aim to identify 
+a specific type 
+%(in the knowledge base)
+that the mentions in the same column 
+could
+potentially have in common
+(for some choice of entity candidates).
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Type Agreement].}
+Given two entities $e_i$ and $e_j$, their agreement is computed from their
+most specific common type $t$ as follows:
+% \vspace{0.1cm}
+\[
+\textit{agree}(e_i, e_j) = \max\big(\textit{itp}(t)\ |\ t \in \textit{types}(e_i) \cap \textit{types}(e_j)\big)
+\]
+% \vspace{0.1cm}
+\noindent where $\textit{types}(e_i)$ is the set of all types for $e_i$ obtained from the KB 
+(using YAGO, {\small\tt yago-knowledge.org}, as it has an expressive type system) 
+and $\textit{itp(t)}$ (\textit{inverse type population}) denotes the specificity of $t$, 
+%from the total number of KB entities having type $t$ as:
+defined as:
+$$\textit{itp}(t) = \log_{10}\bigg(\frac{\#\textit{total\_kb\_entities - \#\textit{entities\_with\_type\_t} ~+~ 0.5}}{\#\textit{entities\_with\_type\_t} ~+~ 0.5}\bigg)$$
+% We compute global values for \textit{itp} from type information of all entities in YAGO, 
+
+\noindent \textit{itp} is analogous to \textit{inverse document frequency (idf)}. Types with a low number of entities in the KB are most informative.
+%\textit{itp} value, and vice versa.
+%
+%We could apply this computation of most specific type to all mentions in the same column
+%(generalizing the above definition from pairs to 
+%entire sets), and enforce a threshold of
+%type agreement among a fraction of the column cells.
+%However, we do not need to enforce such a
+%restrictive constraint. 
+%
+%GW: added this high relevance of Limaye et al.
+%This resembles considerations in \cite{DBLP:journals/pvldb/LimayeSC10}.
+%However, this prior work enforced a hard constraint,
+%computing the per-column most specific common type upfront, and then restricting the EL to entities of that type.
+%GW: no true, Limaye et al just use types as features/factors
+%Instead, 
+We treat
+the type agreement between a pair of same-column cells
+as another factor that is included into 
+the collective inference.
+\end{comment}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Column Alignment}
+\label{sec:columnalignment}
+
+
+%\todo{I suggest to change the section title to "Quantity Column Alignment" to focus on quantity}
+
+%The QuTE system build upon the column alignment task. 
+%In this section, we discuss the weaknesses in existing quantity column alignment approach and propose a robust method to handle them.  
+A major building block of QuTE is the column alignment, which aligns a Q-column with its proper E-column, in order to extract Qfacts from the right pair of columns. This section discusses the limitation of prior works on web table processing and proposes a robust method for this task.
+Key novelties of our method are to leverage cues from an external text corpus, and to couple the inference for column alignments with the entity linker.
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Column Alignment (CA)].}\\
+%\begin{definition}[Column Alignment] 
+Given a pre-processed table ${T}$ with $x$ Q-columns $\{{C}_{k_1},{C}_{k_2},..., {C}_{k_x}\}$ and $y$ E-columns $\{{C}_{v_1},{C}_{v_2},..., {C}_{v_y} \}$, a column alignment is a function $\Lambda$ that maps each Q-column to one E-column:\\
+$\Lambda = \big\{{C}_{k_i} \rightarrow {C}_{v_j}|~i \in \{1..x\}\big\}$
+%\end{definition}
+%\vspace{0.1cm}
+
+\subsection{Heuristics and their Limitations}
+\label{subsec:CA-priorworks}
+
+%GW: now discuss basic CA methods, as baselines
+Column alignment has been addressed in prior works 
+\cite{DBLP:journals/pvldb/VenetisHMPSWMW11,DBLP:journals/pvldb/DengJLLY13,DBLP:conf/er/BraunschweigTL15}
+ under simplifying assumptions, like
+mapping all Q-columns to the same E-column,
+which boils down to identifying a single
+subject column for the entire table.
+We overcome this limitation, but nevertheless
+consider heuristics that are inspired from prior works.
+
+%\todo{emphasize that there are related works that do not link all O-col to a single S-col, however non of them work for quantity}
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Leftmost Heuristic].}
+Each Q-column $C_k$ is mapped to the leftmost
+E-column $C_v$, that is, the smallest $v$
+for which $C_v$ qualifies as an E-column.
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Closest-Left Heuristic].}
+Each Q-column $C_k$ is mapped to the closest
+E-column $C_v$ that is left of $C_k$, that is,
+$v < k$ and $k-v$ is minimal.
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Most-Unique Heuristic].}
+Each Q-column is mapped to the 
+E-column with the largest number of unique values
+(resembling a relational key).
+In case of a tie, 
+% one of the other heuristics serves as tie-breaker.
+pick the leftmost one.
+\vspace{0.1cm}
+
+%%%motivate and highlight our novel contribution
+In many cases, these three heuristics perform remarkably well,
+notwithstanding their simplicity.
+For our example in Table \ref{table:ExampleTable},
+they would be far from perfect, though.
+The Leftmost heuristic maps all Q-columns to
+Team. 
+%It would be able, though, to skip even more leftmost columns with numbers such as ranks, which are common in web tables.
+The Closest-Left heuristic correctly aligns
+Capacity to Stadium, but erroneously 
+aligns Value to Coach.
+The Most-Unique heuristic does not help in
+this example, as all table cells have unique values.
+
+%%%GW: new text here
+Methods that consider multiple subject columns within the same table mostly rely on linking column headers to classes or concepts in a comprehensive knowledge base (e.g., \cite{DBLP:journals/pvldb/LimayeSC10, DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16, DBLP:conf/semweb/EfthymiouHRC17, DBLP:conf/edbt/RitzeB17}), to map column pairs to KB relations. However, quantity measures are covered only very sparsely in state-of-the-art KBs.
+As our goal is to cover a wide variety of 
+%quantities and their respective entity types,
+quantity types,
+we cannot 
+% do not want to 
+%make this strong assumption, as KBs hardly cover quantities. 
+rely on the KB for column alignment.
+%Instead, we just align two columns directly, without any need for a KB. \todo{we still use KB actually, for entity linking + type-lifted traversal, need to make this statement soft, or remove}
+%\GW{rephrase - I think it is now proper wording}
+The only prior work for handling multiple subject columns and aligning other columns without assuming a prior KB
+is \cite{DBLP:conf/er/BraunschweigTL15}.
+%(\todo{'only' sounds very strong, I think there are works that map column pairs to KBs relation, but they also don't work for quantity (we actually mentioned this in Sec 3.2: 'Prior work on extracting SPO triples from web tables often re-sorted to pre-existing triples in a knowledge base as 'witness'...), I think we should remove 'only'})\kp{'only' is fine here. I would rather prefer not to bring up the prior works for aligning pair of E-columns to avoid confusion.}
+%
+This method is based on discovering functional dependencies by 
+analyzing entropy measures between columns. However, in Q-columns the
+typical situation is that all values are distinct, so that their frequencies
+are trivial and do not give hints for cross-column scoring.
+Moreover, we found that even when a web table has multiple E-columns,
+the values in all of them are often unique -- as tables often
+have only few rows. Table \ref{table:ExampleTable} is a typical case,
+and the method of \cite{DBLP:conf/er/BraunschweigTL15} does not 
+add any benefit over the simpler heuristics here.
+Hence we disregard this method.
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{comment}
+
+To overcome the drawback in heuristic-based methods, we propose a graph-based
+approach to aligning a Q-column to its E-column. Our proposed column alignment
+method requires two preprocessing steps-- 1) detection of Q-column and E-column
+and 2) an initial entity linking for E-column. We first present these
+preprocessing steps before jumping to the explanation of our proposed column alignment method.
+
+\subsection{Detection of quantity and Entity column}
+For \textbf{quantity recognition}, 
+unlike in text, where quantity value and unit go along each other, unit of table quantities might appear in the Q-column header. Moreover, quantity value could 
+be affected by a scaling factor (e.g., thousand, million), also given in the header.
+ 
+To tackle this,
+we employ a combination
+of the prior works on QEWT \cite{DBLP:conf/kdd/SarawagiC14} 
+and Illinois Quantitifer \cite{DBLP:journals/tacl/RoyVR15}.
+The latter is used to extract numeric values and units from table body cells $b_{i,j}$. QEWT is applied to the column headers $h_i$ to discover additional information about units and, possibly, scaling factors. 
+Then, detected quantities are linked to the QuTree catalog~\cite{DBLP:conf/kdd/SarawagiC14} for normalization, including unit conversions.  
+
+For \textbf{entity recognition}, 
+we employ the
+AIDA dictionary 
+{\color{red} of $\langel$ entity, alias name$\rangle$ pairs (code at \textit{\url{github.com/ambiverse-nlu}}), 
+}%\color
+which provides a large set of entity mentions
+such as ``Real'', ``Bayern'', etc., 
+along with their candidate entities based on name matches and string similarity, 
+e.g., ``Bayern'':
+{\it Bayern (song)}, 
+{\it Bavaria (Germany)}, 
+{\it FC Bayern Munich}, 
+etc.
+%Their disambiguation via entity linking is discussed in Section \ref{sec:extract}.
+
+Based on the above steps and using thresholds for
+the per-column fractions, we mark each column either as E-column or Q-column (or as ``none'' in some
+exceptional cases).
+
+\end{comment}
+
+\begin{comment}
+
+\subsection{Initial entity linking model (EL)}
+\label{subsec:EL}
+
+%\begin{definition}[Entity Assignment] 
+\noindent{\bf Definition [Entity Assignment].} 
+Given a preprocessed table ${T}$ with 
+a set of 
+entity mentions $\{m_1, m_2, ...\}$, an entity assignment $\Phi$ is a 
+% (possibly partial)
+mapping of mentions onto entities in a KB:
+$\Phi: m_i \rightarrow e_i \in \mathcal{C}(m_i)$
+where $\mathcal{C}(m_i)$ is the set of candidate entities for $m_i$.
+%Putting into words, for entity linking, we want to choose the right entity for each mention that best interprets the table.
+%\end{definition}
+\vspace{0.1cm}
+
+There is ample prior work on entity linking for web tables (e.g., \cite{DBLP:journals/pvldb/LimayeSC10, DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16, DBLP:conf/semweb/EfthymiouHRC17, DBLP:conf/edbt/RitzeB17}). We mostly follow 
+\cite{DBLP:conf/semweb/BhagavatulaND15}, 
+%but devise an important extension.
+with an extension regarding entity types.
+{\color{blue}
+This method adopts Markov Random Fields, presents the table's entity mentions as a set of variables $H = \langle E_1, E_2, ... E_k \rangle$ where $E_i$ refers to the target entity of mention $m_i$ of the table. The MRF defines a set of potential functions $\Psi$ that capture the relationships between these variables; and then represents the joint probability distribution of $H$ as follows:
+
+\[
+\textit{EL-score}(\Phi) = \textit{Pr}(H[\Phi]) = Z^{-1}\prod_{f \in F_\Psi}\Psi_f
+ \]
+where $H[\Phi]$ is a realization of $H$ based on entity  assignment $\Phi$,
+ $F_\Psi$ is the set of $H$'s variable subsets over which $\Psi$ is defined, and $Z$ is a scaling factor to give the true probabilities. For simplicity, we omit $Z$ and use a log-likelihood version when computing \textit{EL-score}.
+ }
+ For defining potential functions $\Psi$, 
+ 
+the following signals are combined into the graphical model:
+
+\squishlist
+\item {\em Prior probability:} the likelihood that an entity is mentioned, estimated from popularity statistics (e.g., Wikipedia page visits or article lengths)
+and frequencies of href anchors.
+\item {\em Context similarity:}
+the degree of the context of mention $m$ in table cell $b_{i,j}$ matching the description of candidate entity $e$ (e.g., by
+Wikipedia excerpts 
+on $e$ 
+or derived embeddings).
+The context of $b_{i,j}$ comprises table header $H$, row $R_i$,
+column $C_j$ and table context
+$\mathcal{X}$ (caption, page title, etc.).
+\item {\em Row-wise coherence:} 
+mentions that appear in the same row 
+$b_{i,*}$ should be mapped to 
+semantically related entities, with relatedness
+from Wikipedia signals (e.g., inlink overlap)
+or embedding-based distance.
+\item {\em Column-wise coherence:} 
+mentions in the same column $b_{*,j}$
+should be mapped to semantically related entities.
+\squishend
+We construct the graphical model from these constituents
+% we construct a 
+%Markov Random Field (MRF) and perform Monte Carlo sampling to
+% graphical model and
+and approximate the best entity assignment $\Phi$,
+% which maximizes $\textit{EL-score}(\Phi)$, 
+similar to
+\cite{DBLP:conf/semweb/BhagavatulaND15}.
+% The random variables are all mentions, with entities as values, and the factors 
+%(potential functions)
+% couple random variables by the above constituents.
+
+%\GW{so far, we follow the literature; next we present our extension on homogeneity}
+
+\todo{maybe remove the type agreement below}
+
+Our extension of this method builds on the hypothesis that all (or most) entities in the same column should share an informative semantic type, such as 
+{\small\tt football team} or {\small\tt sports arena}.
+This can be seen as refinement of the factors for per-column coherence, but it also relaxes the
+relatedness between same-column mentions and
+solely focuses on the type cues.
+
+We can easily find high-level common types
+such as {\small\tt organization}
+or {\small\tt person}.
+These are insufficient signals, though.
+We aim to identify 
+a specific type 
+%(in the knowledge base)
+that the mentions in the same column 
+could
+potentially have in common
+(for some choice of entity candidates).
+
+\vspace{0.1cm}
+\noindent{\bf Definition [Type Agreement].}
+Given two entities $e_i$ and $e_j$, their agreement is computed from their
+most specific common type $t$ as follows:
+% \vspace{0.1cm}
+\[
+\textit{agree}(e_i, e_j) = \max\big(\textit{itp}(t)\ |\ t \in \textit{types}(e_i) \cap \textit{types}(e_j)\big)
+\]
+% \vspace{0.1cm}
+\noindent where $\textit{types}(e_i)$ is the set of all types for $e_i$ obtained from the KB 
+(using YAGO, {\small\tt yago-knowledge.org}, as it has an expressive type system) 
+and $\textit{itp(t)}$ (\textit{inverse type population}) denotes the specificity of $t$, 
+%from the total number of KB entities having type $t$ as:
+defined as:
+$$\textit{itp}(t) = \log_{10}\bigg(\frac{\#\textit{total\_kb\_entities - \#\textit{entities\_with\_type\_t} ~+~ 0.5}}{\#\textit{entities\_with\_type\_t} ~+~ 0.5}\bigg)$$
+% We compute global values for \textit{itp} from type information of all entities in YAGO, 
+
+\noindent \textit{itp} is analogous to \textit{inverse document frequency (idf)}. Types with a low number of entities in the KB are most informative.
+%\textit{itp} value, and vice versa.
+%
+%We could apply this computation of most specific type to all mentions in the same column
+%(generalizing the above definition from pairs to 
+%entire sets), and enforce a threshold of
+%type agreement among a fraction of the column cells.
+%However, we do not need to enforce such a
+%restrictive constraint. 
+%
+%GW: added this high relevance of Limaye et al.
+%This resembles considerations in \cite{DBLP:journals/pvldb/LimayeSC10}.
+%However, this prior work enforced a hard constraint,
+%computing the per-column most specific common type upfront, and then restricting the EL to entities of that type.
+%GW: no true, Limaye et al just use types as features/factors
+%Instead, 
+We treat
+the type agreement between a pair of same-column cells
+as another factor that is included into 
+the collective inference.
+
+\end{comment}
+
+
+\subsection{QuTE Method for Column Alignment}
+\label{subsec:CAscore}
+
+%\todo{need to rewrite this par, CA-score is not mentioned before yet}.
+%GW: introduced here, just rephrased the paragraph a tiny bit
+We propose a robust column alignment approach by modelling the 
+connections between a pair of E-column and Q-column as a graph. 
+To compute a \textit{CA-score} for a candidate alignment, we devise a graph-based connectivity measure 
+that considers the co-occurrence signals for same-row entity/quantity pairs,
+with entities chosen by the initial entity linking $\Phi$.
+Essentially, we treat these entity/quantity pairs as Qfacts and
+leverage external corpus evidence to assess their
+%a-priori ``credibility''.
+confidence.
+
+% \todo{$Phi$ is not defined yet, we need a formal definition of entity assignment (we can write this very briefly in sec 2.2)}\kp{$\phi$ has been mentioned in section 2.2. It's okay. I think the formulation has been avoided intentionally}
+
+\vspace{0.1cm}
+\noindent{\bf Definition [CA-score].}
+The quality of a column alignment $\Lambda$ is:
+\[
+\textit{CA-score}({\Lambda} | \Phi)
+= \frac{1}{Z} 
+%\sim
+%proportional to (leaving the normalization undetermined)
+\sum\limits_{({C}_{k} \rightarrow {C}_{v}) \in {\Lambda}}
+\sum\limits_{\substack{(e,q) ~\text{with}\\
+e = \Phi(b_{i,v}),~q = b_{i,k}\\
+i = 1..r}}
+\hspace{-0.5cm}
+\textit{ext-score}\big(\mathcal{F} = (e,q,X = h_k)\big)
+\]
+where $Z$ is a normalization constant and 
+$\textit{ext-score}(\mathcal{F})$ is a score for observing 
+a Qfact that $e$ has the quantitative property $X$:$q$
+in an external data collection, and $X$ is the header of Q-column $C_k$.
+
+\vspace{0.1cm}
+Prior works on extracting SPO triples from web tables
+often resorted to pre-existing triples in a knowledge base
+as ``witnesses'' for the scoring of newly extracted facts
+(in the spirit of distant supervision).
+For our task, this idea would boil down to a chicken-and-egg problem,
+as we do not yet have a richly populated KB of quantities.
+Therefore, we harness a different source of external evidence,
+namely, large text corpora that potentially contain sentences
+about $e$ having property $X$:$q$.
+Observations of this sort, with potential relaxation of the exact value $q$, are the basis for the computation of 
+$\textit{ext-score} (\mathcal{F})$.
+We describe this building block in Section \ref{sec:qfact_scoring_model}.
+%Therefore, we devise a more sophisticated method in the following subsection, tackling CA and EL jointly.
+%\ref{subsec:jointELandCA} on joint inference for both EL and CA.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\subsection{Joint Inference for CA and EL}
+\subsection{Iterative Learning of Column Alignment}
+\label{subsec:jointELandCA}
+%\todo{more focus on CA}.
+
+%n this phase, we extract the Qfacts from tables by doing column alignment jointly with entity linking.
+%
+%GW: motivation and general approach
+Column alignment (CA) and be integrated with entity linking (EL) for joint inference.
+The rationale for tackling CA and EL jointly
+is that either one can give informative cues to the other, to
+arrive at a better solution.
+CA can build on the output of EL, by 
+incorporating more precise information about
+the entities in a candidate E-column.
+To this end, it can test if the entities 
+exhibit high relatedness with the header of the
+Q-column under consideration.
+For example, ``Capacity'' is rarely seen
+in combination with {\it Real Madrid},
+{\it FC Bayern Munich}, etc.,
+but it is often co-occurring with
+{\it Estadio Santiago Bernab\'{e}u},
+{\it Allianz Arena}, etc.
+Conversely, if we already have
+a good CA solution, this can
+benefit the EL task by identifying
+more focused context. 
+In particular, rather than
+considering all cells in the same
+row of an entity as equally
+relevant for per-row coherence,
+we could give higher weight
+to the coherence between
+cells of the aligned E-column
+and Q-column.
+For example, frequent co-occurrence
+of ``Bernab\'{e}u'' and the
+aligned cell ``Capacity: 81,044''
+(in a text corpus, e.g. Wikipedia,
+possibly with 81,044 relaxed
+into any number around 80,000),
+could boost the linking to
+{\it Estadio Santiago Bernab\'{e}u}
+rather than the footballer and 
+club president
+{\it Santiago Bernab\'{e}u}
+(after whom the stadium is named).
+
+We incorporate these mutual benefits
+by devising a joint objective function
+as follows.
+
+\vspace{0.1cm}
+%\noindent \textbf{Table Plausibility Maximization.}
+\noindent{\bf Definition [Plausibility Maximization].}
+%
+We define the plausibility of
+interpreting table $T$ with 
+entity 
+%assignment 
+linking
+$\Phi$ and
+column alignment $\Lambda$ as:
+\begin{align}
+\label{eq:joint}
+\lambda \cdot \textit{CA-score}(\Lambda | \Phi) ~ + ~ 
+(1-\lambda) \cdot \textit{EL-score}(\Phi | \Lambda)
+\end{align}
+% \textit{plausibility}(\Phi, \Lambda) = 
+where $\lambda$ is a tunable hyper-parameter. Here, $\textit{EL-score}(\Phi | \Lambda)$ is the collective inference of entity linking module considering E-column/Q-column
+pairs selected by $\Lambda$. 
+%of a column alignment $\mathcal{L}$ of $\mathcal{T}$ with respect to an entity assignment $\theta$ as follows:
+%\begin{align}
+%\label{eq:plausibility}
+%\textit{plaus}(\mathcal{L} | \theta) = \lambda.\textit{homo}(\theta) + (1 - \lambda).\textit{conn}(\mathcal{L} | \theta) 
+%\end{align}
+%The \textit{EL-score} is the output ofthe 
+%maximum posterior inference
+% collective inference
+% for the model of Subsection
+% \ref{subsec:EL}, with the
+% exception that we add 
+% coupling factors
+% specifically for the E-column/Q-column
+% pairs selected by $\Lambda$.
+
+% For the \textit{CA-score} we devise
+% a graph-based connectivity measure
+% that considers the co-occurrence
+% signals for same-row entity/quantity pairs, with entities chosen by
+% $\Phi$.
+% Essentially, we treat these pairs as Qfacts and
+% leverage external corpus evidence to assess their
+% a-priori ``credibility''.
+
+% \vspace{0.1cm}
+% \noindent{\bf Definition [CA-score].}
+% The quality of a column alignment $\Lambda$ is:
+% \[
+% \textit{CA-score}({\Lambda} | \Phi)
+% = \frac{1}{Z} 
+% %\sim
+% %proportional to (leaving the normalization undetermined)
+% \sum\limits_{({C}_{k} \rightarrow {C}_{v}) \in {\Lambda}}
+% \sum\limits_{\substack{(e,q) ~\text{with}\\
+% e = \Phi(b_{i,v}),~q = b_{i,k}\\
+% i = 1..r}}
+% \hspace{-0.5cm}
+% \textit{ext-score}\big(\mathcal{F} = (e,q,X = h_k)\big)
+% \]
+% where $Z$ is a normalization constant and 
+% $\textit{ext-score}(\mathcal{F})$ is a score for observing 
+% a Qfact that $e$ has the quantitative property $X$:$q$
+% in an external data collection, and $X$ is the header of Q-column $C_k$.
+
+%To calculat $\textit{likelihood}(\mathcal{F}_i)$ score of each potential Qfact, we propose a novel scoring model, which will be described in Section \ref{sec:qfact_scoring_model}. Our model evaluates each potential Qfact from table by comparing them with quantitative information from text.
+%
+%GW: now discuss qscore(e,q) in a nutshell
+%    and give forward pointer to Section 4 !!!!!
+% \vspace{0.1cm}
+% Prior work on extracting SPO triples from web tables
+% often resorted to pre-existing triples in a knowledge base
+% as ``witnesses'' for the scoring of newly extracted facts
+% (in the spirit of distant supervision).
+% For our task, this idea would boil down to a chicken-and-egg problem,
+% as we do not yet have a richly populated KB of quantities.
+% Therefore, we harness a different source of external evidence,
+% namely, large text corpora that potentially contain sentences
+% about $e$ having property $X$:$q$.
+% Observations of this sort, with potential relaxation of the exact value $q$, are the basis for the computation of 
+% $\textit{ext-score} (\mathcal{F})$.
+% We describe this building block in Section \ref{sec:qfact_scoring_model}.
+
+\begin{comment}
+Figure \ref{fig:scoring}
+shows an illustrative example
+for table plausibility using the connectivity between
+entities and quantities.\\
+\GW{not too happy with this statement and the figure: 
+what exactly does it show?}\\
+%%%    revisit later
+
+\begin{figure}[t]
+\vspace{-1em}
+\hspace*{-1em}
+\centering
+\includegraphics[width=0.5\textwidth,height=3.375cm]{figures/ov_new}
+\vspace{-2em}
+\caption{Joint Entity Linking and Column Alignment.}
+\label{fig:scoring}
+\end{figure}
+\end{comment}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{comment}
+\begin{task}[Column Alignment] Given a preprocessed table $\mathcal{T} = (r, c, \mathcal{H},\mathcal{B}, \mathcal{X})$, for each quantity-column $\mathcal{C}_k (k \in \{1..c\})$, find an entity-column $\mathcal{C}_{v} (v \in \{1..c\})$ to which it refers.
+\end{task}
+
+\begin{example}
+Consider the preprocessed Table \ref{table:ExampleTablePreprocessed}, we want to link quantity-column $\mathcal{C}_3$ (``Capacity'') to entity-column $\mathcal{C}_2$ (``Stadium'') and $\mathcal{C}_5$ (``Value'') to $\mathcal{C}_1$ (``Team'').
+\qed
+\end{example}
+
+\begin{definition}[Entity Assignment] Given a preprocessed table $\mathcal{T}$ with list of entity mentions $\{m_1, m_2, ...\}$, an entity assignment $\theta$ of $\mathcal{T}$ is a way to assign entity values for these mentions from their lists of candidate entities: $\theta = \{m_i \rightarrow e_i \in C(m_i)\}$. Putting into words, for entity linking, we want to choose the right entity for each mention that best interprets the table.
+\end{definition}
+
+\begin{definition}[Column Alignment] Given a preprocessed table $\mathcal{T}$ with list of $x$ quantity-columns $\{\mathcal{C}_{k_1},\mathcal{C}_{k_2},...,\mathcal{C}_{k_x}\}$ and list of $y$ entities-columns $\{\mathcal{C}_{v_1},\mathcal{C}_{v_2},...,\mathcal{C}_{v_y} \}$,  a column alignment $\mathcal{L}$ of $\mathcal{T}$ is a way to link each quantity column to one of the entity columns: $\mathcal{L} = \{\mathcal{C}_{k_i} 
+\rightarrow
+\mathcal{C}_{v_j} | i \in \{1..x\}\}$.
+\end{definition}
+
+\end{comment}
+
+\begin{comment}
+
+For more clearly, an entity assignment is not a single assignment, but a set of assignments of target entities to mentions. Similarly, a column alignment is not a single link, but a set of links between quantity and entity columns. Our objective is to find a column alignment along with an entity assignment that maximize the total plausibility of $\mathcal{T}$. We propose a joint approach for column alignment and entity linking as described below.
+
+\vspace{0.1cm}
+\noindent \textbf{Table Plausibility Maximization.}
+We define the plausibility of a column alignment $\mathcal{L}$ of $\mathcal{T}$ with respect to an entity assignment $\theta$ as follows:
+\begin{align}
+\label{eq:plausibility}
+\textit{plaus}(\mathcal{L} | \theta) = \lambda.\textit{homo}(\theta) + (1 - \lambda).\textit{conn}(\mathcal{L} | \theta) 
+\end{align}
+Basically, the plausibility is defined as the linear combination of two components: (1) $\textit{homo}(\theta)$ reflects the homogeneity of entities 
+%in the same columns 
+in the entity assignment $\theta$; and (2) $\textit{conn}(\mathcal{L} | \theta)$ describes the connectivity, how plausible each quantity-entity link in the column alignment $\mathcal{L}$ is, with regard to entity assignment $\theta$. 
+We define the homogeneity score and the connectivity score as below.
+
+\begin{figure}[t]
+\vspace{-1em}
+\hspace*{-1em}
+\centering
+\includegraphics[width=0.5\textwidth,height=3.375cm]{figures/ov_new}
+\vspace{-2em}
+\caption{Joint Entity Linking and Column Alignment.}
+\label{fig:scoring}
+\end{figure}
+
+
+%\begin{gather*}
+%\textit{homogeneity}(\theta) =  \frac{\sum_{i \in \{1..y\}}\textit{h\_score}(\mathcal{C}_{v_i}|\theta)}{y} \\
+%\textit{connectivity}(\mathcal{L} | \theta) = \frac{\sum\limits_{(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v}) \in \mathcal{L}}\textit{l\_score}(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v} | \theta)}{|\mathcal{L}| = x}
+%\end{gather*}
+%where $\textit{h\_score}(\mathcal{C}_{v_i}|\theta)$ is the homogeneity of entities in column $\mathcal{C}_{v_i}$; and $\textit{l\_score}(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v} | \theta)$ denotes the plausibility of a single link between quantity column $\mathcal{C}_{k}$ and entity column $\mathcal{C}_{v}$, both computed based on entity assignment $\theta$. We define $\textit{h\_score}$ and $\textit{l\_score}$ as below.
+
+\vspace{0.1cm}
+\noindent \textbf{Definition of Homogeneity.}
+The homogeneity $\textit{homo}(\theta)$ score reflects the coherence of each candidate entity in $\theta$ with the table context and other candidate entities. Figure \ref{fig:scoring} shows a slice of Table \ref{table:ExampleTable}, with green lines depict these entity connections.
+We adopt Markov Random Fields, which have been successfully employed for entity linking in web tables by previous works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}. Our graphical model is a light-weight modified version from these works.
+In particular, we present the table's entity mentions as a set of variables $H = \langle E_1, E_2, ... E_k \rangle$ where $E_i$ refers to the target of the $i$-th entity mention of the table. The MRF defines a set of potential functions $\Phi$ that capture the relationships between these variables; and represents the joint probability distribution of $H$ as:
+%\[
+%\textit{h\_score}(\mathcal{C}_v|\theta) = \textit{Pr}(H_v[\theta]) = Z^{-1}\prod_{f \in F_\Phi}\Phi_f
+% \]
+\[
+\textit{homo}(\theta) = \textit{Pr}(H[\theta]) = Z^{-1}\prod_{f \in F_\Phi}\Phi_f
+ \]
+where $H[\theta]$ is a realization of $H$ based on entity  assignment $\theta$,
+ $F_\Phi$ is the set of $H$'s variable subsets over which $\Phi$ is defined, and $Z$ is a scaling factor to give the true probabilities. For simplicity, we omit $Z$ and use a log-likelihood version when computing homogeneity. For defining potential functions $\Phi$, following previous works \cite{DBLP:conf/semweb/BhagavatulaND15, DBLP:conf/cikm/IbrahimRW16}, we restrict to use edge-observation and node-observation features only, which are listed below:
+\subsubsection*{(1) Candidate prior probability} We include the precomputed prior probability $P(e|m)$ as a node-observation feature, which gives a strong signal about the correct entity for a mention, since entity linking relying only on this feature can still work quite well \cite{DBLP:conf/semweb/BhagavatulaND15}.
+
+\subsubsection*{(2) Entity-context coherence} This  node-observation feature reflects the coherence of a candidate entity $e$ and the context of its mention $\textit{ctx}(m)$. We define the context of a mention $\textit{ctx}(m)$ in cell $b_{x,y}$ as the contents of \textit{(i)} table headers (i.e., $\{h_i\}$), \textit{(ii)} row $x$ (i.e., $\{b_{x,?}\}$), \textit{(iii)} column $y$ (i.e., $\{b_{?,y}\}$), and \textit{(iv)} table caption (if available); note that stopwords and special characters are removed from the context. The entity-context coherence of a candidate entity $e$ is computed from the overlap between its Wikipedia page content $\textit{wiki}(e)$ and $\textit{ctx}(m)$ as:
+\[
+|\textit{ctx}(m) \cap \textit{wiki}(e)|\ /\ |\textit{ctx}(m)|
+\]
+
+\subsubsection*{(3) Candidate type agreement} An edge is added between every entity pair $(e_i,e_j)$ in the same column to reflects the fact that same-column entities should be of the same type.
+%\[
+%\textit{itf}(t) = \log\bigg(\frac{\#\textit{total\_entities}}{\#\textit{entities\_with\_type\_t} + 1}\bigg)
+%\]
+Type agreement between two entities is computed from their most specific common type from the KB:
+\[
+\textit{agree}(e_i, e_j) = \max\big(\textit{itp}(t)\ |\ t \in \textit{types}(e_i) \cap \textit{types}(e_j)\big)
+\]
+we define $\textit{itp(t)}$ (\textit{inverse type popularity}), which denotes the specificity of $t$, from the total number of KB entities having type $t$ as:
+\[
+\textit{itp}(t) = \log_{10}\bigg(\frac{\#\textit{total\_kb\_entities - \#\textit{entities\_with\_type\_t} + 0.5}}{\#\textit{entities\_with\_type\_t} + 0.5}\bigg)
+\]
+% We compute global values for \textit{itp} from type information of all entities in YAGO, 
+\textit{itp} is computed similarly to the famous measure \textit{inverse document frequency (idf)} in information retrieval. Types with low number of entities should have a high \textit{itp} value, and vice versa.
+
+% As entities in the same column should be of the same types,  this property, which is added
+
+% which is called . Given a KB type $t$, $\textit{itp}(t)$ represents the informativeness of $t$, e.g., \textit{``object''} is a more general type than \textit{``car''}, and hence should have a lower \textit{itp} value. This measure is defined as:
+
+\subsubsection*{(4) Same-row candidate-candidate co-occurrence} This edge-observation feature reflects the relatedness of candidate entities in the same row. Following \cite{DBLP:conf/cikm/IbrahimRW16}, we add an edge between every same-row entity pair $(e_i,e_j)$ with value is the number of Wikipedia pages in which they co-occur, normalized so that the maximum value is equal to 1.
+
+% One can also incorporate more features into the model (e.g., a list of features from \cite{DBLP:conf/semweb/BhagavatulaND15}). However, adding more features might result in the decrease of performance in terms of running-time, as computing these features is time-consuming. Moreover, with only four presented features, our model already works quite well.
+
+\vspace{0.1cm}
+\noindent \textbf{Definition of Connectivity.} The connectivity $\textit{conn}(\mathcal{L} | \theta)$ score describes the credibility of column alignment $\mathcal{L}$ regarding entity assignment $\theta$, and is defined as:
+\[
+\textit{conn}(\mathcal{L} | \theta) = \bigg(\sum\limits_{(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v}) \in \mathcal{L}}\textit{l\_score}(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v} | \theta)\bigg)/|\mathcal{L}|
+\]
+where $\textit{l\_score}(\mathcal{C}_{k} \rightarrow \mathcal{C}_{v} | \theta)$ denotes the credibility of a single link between quantity column $\mathcal{C}_{k}$ and entity column $\mathcal{C}_{v}$, regarding $\theta$. We define the $\textit{l\_score}$ from the likelihood of potential Qfacts from the two columns
+% based on current entity assignment $\theta$ 
+as:
+\begin{align}
+\label{eq:likelihood}
+\textit{l\_score}(\mathcal{C}_k \rightarrow \mathcal{C}_v | \theta) = 
+\frac{
+\sum_{i} \textit{likelihood}(\mathcal{F}_i = (e_i, q_i, X_i))
+}{\#\textit{potentially\_generated\_Qfacts}}
+\end{align}
+where $\textit{likelihood}(\mathcal{F}_i)$ denotes the likelihood of the Qfact $\mathcal{F}_i$ potentially generated from row $i$ of the two linked columns, with entity $e_i \in \theta$ extracted from entity cell $b_{i,v}$; quantity $q_i$ extracted from quantity cell $b_{i,k}$; and context $X_i$ is the header $h_k$ of the quantity column $\mathcal{C}_k$.
+%, combining with other context tokens from $b_{i,k}$ if available. 
+Our \textit{l\_score} is basically defined as the average quality of such potential Qfacts. As a result, a high \textit{l\_score} not only indicates a strong link between $\mathcal{C}_k$ and its referred column $\mathcal{C}_v$, but also suggests high confidence to entity assignment $\theta$, in particular, the selected candidates for entity mentions of column $\mathcal{C}_v$.
+
+To calculate $\textit{likelihood}(\mathcal{F}_i)$ score of each potential Qfact, we propose a novel scoring model, which will be described in Section \ref{sec:qfact_scoring_model}. Our model evaluates each potential Qfact from table by comparing them with quantitative information from text. \begin{example}
+Consider the link from quantity column \textit{``Capacity''} to entity column \textit{``Stadium''} in Figure \ref{fig:scoring}, and an entity assignment $\theta$ where all entity mentions are correctly disambiguated, the quality \textit{l\_score} of this link is computed as the average likelihood of the three potentially generated Qfacts: $\mathcal{F}_1 = (e = \textit{<KB:Allianz\_Arena>}; q = \textit{(75000;)}, X = \{\textit{capacity}\})$, $\mathcal{F}_2 = (e = \textit{<KB:Bernabeu>}; q=\textit{(81044;)}, X = \{\textit{capacity}\})$, etc. The quality of these Qfacts is examined by looking into text documents, e.g., $\mathcal{F}_1$ is a good fact (See Fig. \ref{fig:scoring}).
+\qed
+\end{example}
+
+\end{comment}
+
+% \input{algor/algor1}
+%%GW: too much low-level detail, and we need to save space anyway
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\vspace{0.1cm}
+\noindent \textbf{Inference Algorithm.}
+%\GW{the algorithm is unclear:
+%partly it sounds like MRF inference (citing Getoor), partly it sounds just like iteratively interleaving EL and CA steps;
+%the pseudocode does not help (too microscopic);\\
+%Thinh: this needs to be clarified!!!!
+%}%GW
+%
+%GW: need to trim and focus this text
+%
+For joint inference about CA and EL, we adopt
+the collective classification method from \cite{DBLP:conf/icml/LuG03},
+called {\em ICA}, which was also used by
+\cite{DBLP:conf/semweb/BhagavatulaND15}.
+This avoids the high complexity of full-fledged
+MRF inference, which would be prohibitive as
+our factor graphs are very dense.
+
+In essence, for each 
+% possible 
+column alignment $\Lambda$, we compute the best EL solution $\Phi$
+conditioned on $\Lambda$ using the ICA method. The pair $(\Lambda, \Phi)$ that maximizes the joint objective function (plausibility maximization in Equation \ref{eq:joint}) is chosen as the final result.
+% (plausibility maximization, as defined above)
+% The EL in turn leads to a better $\Lambda$,
+% and these steps are greedily iterated towards
+% maximizing the joint objective function
+% (plausibility maximization, as defined above).
+
+\begin{comment}
+
+We implemented an algorithm to find the optimal entity assignment $\theta^*$ and column alignment $\mathcal{L}^*$ that maximize the plausibility value given
+in Equation \ref{eq:plausibility}. 
+Algorithm \ref{algor:1} shows the detail of our implementation. The main idea is that, for every $\mathcal{L}$, we find a corresponding $\theta'$ that maximizes $\textit{plausibility}(\mathcal{L} | \theta')$ (line 3). The pair $\mathcal{L}$ and $\theta'$ which best optimizes the objective function is chosen as the result.
+
+For finding the optimal entity assignment $\theta'$ for a fixed column alignment $\mathcal{L}$, since doing a brute force over all possible entity assignments is time consuming, we adopt the Iterative Classification Algorithm
+(ICA) \cite{DBLP:conf/icml/LuG03}, which is also used in \cite{DBLP:conf/semweb/BhagavatulaND15}, to collectively disambiguate all mentions.
+% ICA is an iterative inference approach, which greedily reassigns each variable to its maximum-likelihood value, conditioned on the current values of other variables.
+We start with the entity assignment, which initializes each mention $m$ with the candidate entity $e$, which has the greatest prior probability $P(e|m)$ (line 8). Then, in each iteration, we compute a local best new candidate for each mention, conditioned on other mention entity values (line 11). 
+We reassign these new values to mentions (line 13) and repeat the loop until there is no change.
+
+\end{comment}
+
+\subsection{Contextualization of Qfacts}
+%\GW{this is is important, even if it is straightforward -- hence this extra subsection}
+We extract Qfacts based on the optimal pair $(\Lambda, \Phi)$ computed from the joint inference model. All extracted 
+Qfacts are contextualized with 
+%not only the Q-column header, but also further, with
+the Q-column header,
+informative cue words from table caption, same-row cells, page title, all DOM-tree headings leading to the table, and the text in proximity to the table (e.g., preceding and following paragraph).
+All these components are optional.
+This way, we capture cues such as ``football clubs''
+for Table \ref{table:ExampleTable}.
+We include all words 
+% and other tokens
+from these context items, forming a bag-of-words.
+%\GW{any filtering? any smart weighting? ..... ?}\\
+%%% concluding with a wrap-up sentence:
+The final output is a Qfact in the form
+$(e,q,X)$ with entity $e$, quantity $q$ and \textit{contextualization} $X$.
+
+
+
